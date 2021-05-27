@@ -1,0 +1,10 @@
+﻿@model Bookstore.Models.View.ErrorViewModel
+@{
+    ViewData["Title"] = "Error";
+}
+
+<div class="m-3">
+    <h2 class="text-danger">@Model.Message</h2>
+    <h3>@(Model.Controller).@(Model.Action)</h3>
+    <a href="/">Return Home</a>
+</div>

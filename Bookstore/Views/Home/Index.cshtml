@@ -1,0 +1,109 @@
+﻿@using Microsoft.CodeAnalysis.CSharp.Syntax
+@using System.Collections.ObjectModel
+@{
+    ViewData["Title"] = "Home Page";
+    /*
+    ViewData["Bookmarks"] = new List<Bookmark>()
+    {
+        new Bookmark()
+        {
+            Archive = null,
+            Created = DateTime.Now,
+            Favicon = new byte[]{},
+            Folder = new Folder(){ Name = "Example_Folder"},
+            Id = 0,
+            Modified = DateTime.Now,
+            Tags = new Collection<Tag>(),
+            Title = "Example Bookmark",
+            Url = new Uri("https://www.example.com"),
+            User = null
+        },
+        
+        new Bookmark()
+        {
+            Archive = null,
+            Created = DateTime.Now,
+            Favicon = new byte[]{},
+            Folder = new Folder() { Name = "Example_Folder"},
+            Id = 0,
+            Modified = DateTime.Now,
+            Tags = new Collection<Tag>(),
+            Title = "Example Bookmark #2",
+            Url = new Uri("https://www.example.com/2"),
+            User = null
+        }
+    };
+    */
+}
+
+<div class="m-4">
+    <!-- Query Bar -->
+    <div class="bg-light p-2">
+        <form>
+            <fieldset class="d-flex justify-content-between">
+                <input style="width: 84%" type="text" class="form-control d-inline-block" placeholder="Bookmark Query">
+                <input style="width: 15%" type="submit" name="search" value="Search" class="d-inline-block">
+            </fieldset>
+        </form>
+    </div>
+
+    <form>
+        <!-- Table Controls -->
+        <span class="font-weight-bold">Bookmark Actions</span>
+        
+        <div class="d-flex justify-content-between my-2">
+            <div class="w-50">
+                <input type="submit" name="action" class="btn btn-primary" value="Archive">
+                <input type="submit" name="action" class="btn btn-primary" value="Edit">
+                <input type="submit" name="action" class="btn btn-danger" value="Delete">
+                <button class="btn btn-secondary">Select All</button>
+            </div>
+            
+            <div class="d-flex justify-content-end w-50">
+                <select class="form-control d-inline-block" style="width:10em">
+                    <option selected>Sort By...</option>
+                    <option>Date Created</option>
+                    <option>URL</option>
+                    <option>Title</option>
+                    <option>Folder</option>
+                    <option>Tags</option>
+                </select>
+                <a class="ml-2 btn btn-success" asp-controller="Bookmarks" asp-action="Create">New Bookmark</a>
+            </div>
+        </div>
+        
+        <!-- Main Table -->
+        <table class="table table-sm">
+            <thead>
+            <tr>
+                <th>Select</th>
+                <th>Folder</th>
+                <th>Bookmark</th>
+                <th>Tags</th>
+                <th>Archive</th>
+            </tr>
+            </thead>
+            <tbody>
+                @foreach (var bookmark in (ViewData["Bookmarks"] as List<Bookmark>)!)
+                {
+                    <tr>
+                    <td class="text-center"><input type="checkbox" class="form-check" name="selected" id="@bookmark.Id"></td>
+                    <td><a href="#">@(bookmark.Folder?.ToMenuString() ?? "(root)") </a></td> <!-- TODO: Expand this out to include parent folders -->
+                    <td>
+                        <img src="~/Bookmarks/Favicon/@bookmark.Id">
+                        <a href="@bookmark.Url">@bookmark.Title</a>
+                    </td>
+                    <td><a href="@bookmark.Url">@bookmark.Tags</a></td>
+                    @if (bookmark.Archive == null) {
+                        <td>Not Archived</td>
+                    } else {
+                        <td><a href="#">Archive Link</a></td>
+                    }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </form>
+
+</div>
+

@@ -1,0 +1,21 @@
+@{
+    ViewData["Title"] = "Create Bookmark";
+}
+
+<div class="m-3">
+    <h1>Add New Bookmark</h1>
+    <form >
+        <div class="form-group form-inline">
+            <label class="mr-3">URL</label>
+            <input class="form-control" type="text" name="url" size="50" placeholder="https://...">
+        </div>
+        <div class="form-group">
+            <input class="" id="archive-bookmark" name="archive-bookmark" type="checkbox">
+            <label for="archive-bookmark">Archive Bookmark</label>
+        </div>
+        <div class="form-group">
+            <input class="btn btn-primary" type="submit" asp-controller="Bookmarks" asp-action="LoadAndEdit" formmethod="post" value="Load and Edit"> 
+            <input class="btn btn-primary" type="submit" asp-controller="Bookmarks" asp-action="Save" formmethod="post" value="Save"> 
+        </div>
+    </form>
+</div>

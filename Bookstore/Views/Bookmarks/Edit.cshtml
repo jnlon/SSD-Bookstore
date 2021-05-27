@@ -1,0 +1,70 @@
+@using System.Text
+@{
+    ViewData["Title"] = "Edit Bookmark";
+    Bookmark bookmark = (ViewData["Bookmark"] as Bookmark)!;
+    List<Folder> folders = (ViewData["Folders"] as List<Folder>)!;
+}
+
+<div class="m-3">
+    <h1>Edit Bookmark</h1>
+    <form class="d-block" asp-controller="Bookmarks" asp-action="Edit" method="POST" style="width: 40em">
+        <div class="form-group">
+            <label for="url">URL</label>
+            <input class="form-control" type="text" name="url" id="url" value="@bookmark.Url" placeholder="https://example.com">
+        </div>
+        <div class="form-group">
+            <label for="title">Title</label>
+            <input class="form-control" type="text" name="title" id="title" value="@bookmark.Title" placeholder="Example Title">
+        </div>
+        <div class="form-group">
+            <label for="tags">Tags</label>
+            <input class="form-control" type="text" name="tags" id="tags" value="@bookmark.Tags" placeholder="tag1, tag2">
+            <!--<small><a href="#">View Tag List</a></small>-->
+        </div>
+        <!--
+        <div class="form-group">
+            <label for="folder" class="d-block">Folder</label>
+            <div class="d-flex justify-content-between align-items-center">
+                <select name="folder" id="folder" class="form-control d-inline-block">
+                    <option>(Default Folder)</option>
+                    <option>Demo</option>
+                    <option>Demo > Example</option>
+                </select>
+                <a href="#" class="d-block text-right" style="width: 8em">+ Add New</a>
+            </div>
+        </div>
+        -->
+        
+        <div class="form-group">
+            <label for="folder" class="d-block">Folder</label>
+            <select name="folder" id="folder" class="form-control d-inline-block">
+            <option></option>
+            @foreach (var folder in folders)
+            {
+                <option value="@folder.Id" selected="@(bookmark.Folder?.Id == folder.Id)"> @folder.ToMenuString() </option>
+            }
+            </select>
+            
+            <details class="mt-2">
+                <summary class="font-weight-bold">New Folder</summary>
+                <div class="pl-3 pt-3">
+                    <input type="text" name="newfolder" placeholder="New folder" class="form-control d-inline-block">
+                    <div><small>New folder will be created under "Folder" specified above</small></div>
+                </div>
+            </details>
+        </div>
+        
+        <!--<div>
+            <label for="keywords">Keywords</label>
+            <input class="" type="text" name="keywords" id="keywords" placeholder="keyword1, keyword2">
+        </div>-->
+        <div class="form-group mt-3">
+            <span>Icon</span>
+            <img src="~/Bookmarks/Favicon/@bookmark.Id">
+        </div>
+        
+        <div>
+            <input type="submit" name="save" class="btn btn-success" value="Save Bookmark">
+        </div>
+    </form>
+</div>

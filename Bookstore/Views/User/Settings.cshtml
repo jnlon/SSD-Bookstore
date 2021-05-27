@@ -1,0 +1,55 @@
+@{
+    ViewData["Title"] = "Account Settings";
+}
+
+<div class="m-3">
+    <h1>Settings</h1>
+    
+    <form class="d-block w-50">
+        
+        <div class="form-group">
+            <label for="archive-by-default" class="m-0">
+                <input name="archive-by-default" id="archive-by-default" type="checkbox" class="form-control d-inline-block w-auto h-auto">
+                Archive New Bookmarks by Default
+            </label>
+        </div>
+
+        <div class="form-group">
+            <label for="default-query">Home Page Default Query</label>
+            <input name="default-query" id="default-query" type="text" class="form-control">
+        </div>
+        
+        <div class="form-group">
+            <label for="default-max-results">Default Number of Max Results</label>
+            <input name="default-max-results" id="default-max-results" type="number" class="form-control">
+        </div>
+        
+        <div class="form-group">
+            <input type="submit" name="Add User" class="form-control btn btn-success w-50" value="Save Settings">
+        </div>
+    </form>
+    
+    <h1 class="mt-3">Import and Export</h1>
+    
+    <form class="d-block w-50">
+        <div class="form-group">
+            <label for="file-format">File Format</label>
+            <select id="file-format" name="file-format" class="form-control">
+                <option>Netscape HTML</option>
+                <option>Bookstore CSV</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="import-file-content">Upload File</label>
+            <input type="file" id="import-file-content" name="import-file-content" class="form-control-file">
+        </div>
+        <div>
+            <!-- TODO: Disable import button until file is uploaded ?? -->
+            <input type="submit" name="action" value="Import" class="form-control w-25 btn btn-success">
+            <input type="submit" name="action" value="Export" class="form-control w-25 btn btn-success">
+        </div>
+    </form>
+    
+    <h1 class="mt-3">Other</h1>
+    <a href="account">Account Settings</a>
+</div>
