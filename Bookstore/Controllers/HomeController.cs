@@ -8,6 +8,7 @@ using Bookstore.Models;
 using Bookstore.Models.View;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 
 namespace Bookstore.Controllers
 {
@@ -26,8 +27,11 @@ namespace Bookstore.Controllers
         public IActionResult Index()
         {
             ulong userId = ulong.Parse(User.FindFirstValue(Claims.UserId));
+            ViewData["Folders"] = _context.Folders.Where(f => f.UserId == userId).ToList();
             ViewData["Bookmarks"] = _context
                 .Users
+                .Include(u => u.Bookmarks)
+                .ThenInclude(bm => bm.Folder)
                 .Include(u => u.Bookmarks)
                 .ThenInclude(bm => bm.Tags)
                 .Single(u => u.Id == userId)

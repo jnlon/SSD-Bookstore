@@ -2,6 +2,7 @@
 @using System.Collections.ObjectModel
 @{
     ViewData["Title"] = "Home Page";
+    List<Folder> folders = ViewData["Folders"] as List<Folder>;
     /*
     ViewData["Bookmarks"] = new List<Bookmark>()
     {
@@ -94,7 +95,19 @@
                         </td>
                         <td class="text-center align-middle">
                             <!-- TODO: Expand this out to include parent folders -->
-                            <a href="#">@(bookmark.Folder?.ToMenuString() ?? "(root)") </a>
+                            @{ var bookmarkFolders = folders.FirstOrDefault(f => f.Id == bookmark.Folder?.Id)?.ToArray() ?? new Folder[] {}; }
+                            @if (bookmarkFolders.Length == 0)
+                            {
+                                    <span>No Folder</span>
+                            }
+                            @foreach (var folder in bookmarkFolders)
+                            {
+                                <a href="?sortBy=folder:{@folder.Id}">@folder.Name</a>
+                                @if (folder.Id != bookmarkFolders.Last().Id)
+                                {
+                                    <span>&gt;</span>
+                                }
+                            }
                         </td> 
                         <td class="align-middle">
                             <img style="width: 1.5em; height: 1.5em;" src="~/Bookmarks/Favicon/@bookmark.Id">

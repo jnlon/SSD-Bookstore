@@ -12,7 +12,7 @@ namespace Bookstore.Models
         public ulong? ParentId { get; set; }
         public List<Bookmark> Bookmarks { get; set; }
 
-        private static Folder[] WalkUp(Folder folder)
+        private static Folder[] ToArray(Folder folder)
         {
             var folders = new Stack<Folder>(new [] {folder});
             while ((folder = folder?.Parent) != null)
@@ -20,9 +20,14 @@ namespace Bookstore.Models
             return folders.ToArray();
         }
         
+        public Folder[] ToArray()
+        {
+            return ToArray(this);
+        }
+
         public string ToMenuString()
         {
-            return string.Join(" > ", WalkUp(this).Select(f => f.Name));
+            return string.Join(" > ", ToArray().Select(f => f.Name));
         }
     }
 }
