@@ -114,10 +114,10 @@
                             <a href="@bookmark.Url">@bookmark.Title</a>
                         </td>
                         <td class="text-center align-middle">
-                            @foreach (var tag in bookmark.Tags)
+                            @{ var sortedBookmarkTags = bookmark.Tags?.OrderBy(t => t.Name).ToList() ?? new List<Tag>();}
+                            @foreach (var tag in sortedBookmarkTags)
                             {
-                                <a href="?tag=@tag.Name">@tag.Name</a>
-                                <span> </span>
+                                <a href="?tag=@tag.Name">@tag.Name</a><span>@(tag != sortedBookmarkTags.Last() ? "," : "")</span>
                             }
                         </td>
                         <td class="text-center align-middle">
