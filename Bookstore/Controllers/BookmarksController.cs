@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.Http;
 using System.Net.NetworkInformation;
 using System.Security.Cryptography.Xml;
 using Bookstore.Constants.Authorization;
+using Bookstore.Controllers.Helpers;
 using Bookstore.Models;
 using Bookstore.Models.View;
 using Bookstore.Utilities;
@@ -57,7 +59,7 @@ namespace Bookstore.Controllers
                 Modified = DateTime.Now,
                 Favicon = load.Favicon,
                 Folder = null,
-                Tags = new Collection<Tag>(),
+                Tags = new HashSet<Tag>(),
                 Title = load.Title,
                 Url = url
             });
@@ -85,8 +87,9 @@ namespace Bookstore.Controllers
             var user = _context
                 .GetUser(User)
                 .Include(u => u.Bookmarks)
+                .ThenInclude(bm => bm.Tags)
                 .First();
-            
+
             Bookmark? bookmark =
                 user
                 .Bookmarks
@@ -114,41 +117,27 @@ namespace Bookstore.Controllers
             public string? NewFolder { get; set; } // Only if user chooses to create a new folder
         }
 
-        private class FolderHelper
-        {
-            private DbSet<Folder> _folders;
-            private ulong _userId;
-            public FolderHelper(DbSet<Folder> folders, ulong userId)
-            {
-                _folders = folders;
-                _userId = userId;
-            }
-
-            public Folder? GetFolder(ulong folderId) => _folders.FirstOrDefault(f => f.UserId == _userId && f.Id == folderId);
-            // A valid folder is null or exists for this user
-            public bool ValidFolder(ulong? folderId) => folderId == null || GetFolder((ulong) folderId) != null;
-            public Folder CreateFolder(string name, Folder? parent)
-            {
-                var folder = new Folder()
-                {
-                    Name = name,
-                    UserId = _userId,
-                    Parent = parent
-                };
-                _folders.Add(folder);
-                return folder;
-            }
-        }
-
         [HttpPost]
         public IActionResult Edit([FromRoute] ulong id, [FromForm] BookmarkEditDto upload)
         {
-            var user = _context.GetUser(User).Include(u => u.Bookmarks).First();
+            var user = _context.GetUser(User)
+                .Include(u => u.Bookmarks)
+                .ThenInclude(bm => bm.Tags)
+                .First();
+            
             var bookmark = user.Bookmarks.First(b => b.Id == id);
             bookmark.Modified = DateTime.Now;
             bookmark.Title = upload.Title;
             bookmark.Url = bookmark.Url;
             
+            // Clear previous tags
+            bookmark.Tags.Clear();
+            
+            // Add tags from upload to bookmark entity, re-using tags on users account if they exist
+            var th = new TagHelper(_context.Tags, user.Id);
+            foreach (string tagName in th.ParseTagList(upload.Tags))
+                bookmark.Tags.Add(th.GetOrCreateNewTag(tagName));
+
             // 1. if the folder ID not-null and does not exist in folder list:
             //  - Throw an error
             // 2. If the new folder string is specified:
@@ -180,15 +169,5 @@ namespace Bookstore.Controllers
             _context.SaveChanges();
             return RedirectToAction(nameof(Index), "Home");
         }
-
-        // Use query param ids=1,2,3... to get editable bookmarks
-        //public IActionResult Edit()
-        //{
-        //    return View();
-        //}
-        
-        ///////////////////////////////////////////
-        // Non-Route Logic
-        ///////////////////////////////////////////
     }
 }

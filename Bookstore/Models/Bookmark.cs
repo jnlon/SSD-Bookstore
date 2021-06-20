@@ -14,8 +14,8 @@ namespace Bookstore.Models
         public DateTime Modified { get; set; }
         public Uri Url { get; set; }
         public string Title { get; set; }
-        public byte[] Favicon { get; set; }
-        public ICollection<Tag> Tags { get; set; }
+        public byte[]? Favicon { get; set; }
+        public HashSet<Tag> Tags { get; set; }
         
         // ????
         // public string Keywords { get; set; }

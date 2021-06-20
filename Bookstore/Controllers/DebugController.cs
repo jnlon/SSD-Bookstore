@@ -68,7 +68,7 @@ namespace Bookstore.Controllers
                 Archive = null,
                 Created = DateTime.Now,
                 Modified = DateTime.Now,
-                Tags = new Collection<Tag>(),
+                Tags = new HashSet<Tag>(),
                 Favicon = new byte[] { },
                 Title = title,
                 Url = url,

@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Bookstore.Migrations
 {
     [DbContext(typeof(BookmarksContext))]
-    [Migration("20210523015437_InitialCreate")]
+    [Migration("20210620025112_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -64,7 +64,6 @@ namespace Bookstore.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<byte[]>("Favicon")
-                        .IsRequired()
                         .HasColumnType("BLOB");
 
                     b.Property<ulong?>("FolderId")
@@ -170,9 +169,12 @@ namespace Bookstore.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<ulong>("UserId")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("Id");
 
-                    b.ToTable("Tag");
+                    b.ToTable("Tags");
                 });
 
             modelBuilder.Entity("Bookstore.Models.User", b =>
@@ -208,8 +210,8 @@ namespace Bookstore.Migrations
                         {
                             Id = 1ul,
                             Admin = false,
-                            PasswordHash = "oDbvXBEa8K+myl1Ixlm7G+Zxn62LVyYECvVyanAeaOc=",
-                            PasswordSalt = "c6O0tE1D+df+zZksHYRmJg==",
+                            PasswordHash = "PkkqREI8rB4VNwDJ4AQBKx+JIHRu8lk2QX2QwAbbEcU=",
+                            PasswordSalt = "jlh9Hxo4Ebr82D6pEX322g==",
                             Username = "toast"
                         });
                 });

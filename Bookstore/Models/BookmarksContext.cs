@@ -12,6 +12,7 @@ namespace Bookstore.Models
     {
         public DbSet<User> Users { get; set; }
         public DbSet<Bookmark> Bookmarks { get; set; }
+        public DbSet<Tag> Tags { get; set; }
         public DbSet<Folder> Folders { get; set; }
 
         public BookmarksContext(DbContextOptions<BookmarksContext> options) : base(options)

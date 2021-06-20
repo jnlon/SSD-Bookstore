@@ -29,6 +29,7 @@ namespace Bookstore.Controllers
             ViewData["Bookmarks"] = _context
                 .Users
                 .Include(u => u.Bookmarks)
+                .ThenInclude(bm => bm.Tags)
                 .Single(u => u.Id == userId)
                 .Bookmarks;
             

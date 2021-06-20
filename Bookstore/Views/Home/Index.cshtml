@@ -60,6 +60,7 @@
             </div>
             
             <div class="d-flex justify-content-end w-50">
+                <!--
                 <select class="form-control d-inline-block" style="width:10em">
                     <option selected>Sort By...</option>
                     <option>Date Created</option>
@@ -68,6 +69,7 @@
                     <option>Folder</option>
                     <option>Tags</option>
                 </select>
+                -->
                 <a class="ml-2 btn btn-success" asp-controller="Bookmarks" asp-action="Create">New Bookmark</a>
             </div>
         </div>
@@ -76,29 +78,42 @@
         <table class="table table-sm">
             <thead>
             <tr>
-                <th>Select</th>
-                <th>Folder</th>
-                <th>Bookmark</th>
-                <th>Tags</th>
-                <th>Archive</th>
+                <th class="text-center">Select</th>
+                <th class="text-center"><a title="Sort by Folder" href="?sortBy=folder">Folder &#x296E;</a></th>
+                <th><a title="Sort by Bookmark" href="?sortBy=bookmark">Bookmark &#x296E;</a></th>
+                <th class="text-center"><a title="Sort by Tag" href="?sortBy=tag">Tags &#x296E;</a></th>
+                <th class="text-center"><a title="Sort by Archive Status" href="?sortBy=archive">Archive &#x296E;</a></th>
             </tr>
             </thead>
             <tbody>
                 @foreach (var bookmark in (ViewData["Bookmarks"] as List<Bookmark>)!)
                 {
                     <tr>
-                    <td class="text-center"><input type="checkbox" class="form-check" name="selected" id="@bookmark.Id"></td>
-                    <td><a href="#">@(bookmark.Folder?.ToMenuString() ?? "(root)") </a></td> <!-- TODO: Expand this out to include parent folders -->
-                    <td>
-                        <img src="~/Bookmarks/Favicon/@bookmark.Id">
-                        <a href="@bookmark.Url">@bookmark.Title</a>
-                    </td>
-                    <td><a href="@bookmark.Url">@bookmark.Tags</a></td>
-                    @if (bookmark.Archive == null) {
-                        <td>Not Archived</td>
-                    } else {
-                        <td><a href="#">Archive Link</a></td>
-                    }
+                        <td class="text-center align-middle">
+                            <input type="checkbox" class="form-check mx-auto" style="height: 1.5em; width: 1.5em;" name="selected" id="@bookmark.Id">
+                        </td>
+                        <td class="text-center align-middle">
+                            <!-- TODO: Expand this out to include parent folders -->
+                            <a href="#">@(bookmark.Folder?.ToMenuString() ?? "(root)") </a>
+                        </td> 
+                        <td class="align-middle">
+                            <img style="width: 1.5em; height: 1.5em;" src="~/Bookmarks/Favicon/@bookmark.Id">
+                            <a href="@bookmark.Url">@bookmark.Title</a>
+                        </td>
+                        <td class="text-center align-middle">
+                            @foreach (var tag in bookmark.Tags)
+                            {
+                                <a href="?tag=@tag.Name">@tag.Name</a>
+                                <span> </span>
+                            }
+                        </td>
+                        <td class="text-center align-middle">
+                            @if (bookmark.Archive == null) {
+                                @Html.Raw("Not Archived")
+                            } else {
+                                <a href="#">Archive Link</a>
+                            }
+                        </td>
                     </tr>
                 }
             </tbody>

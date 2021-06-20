@@ -18,7 +18,7 @@
         </div>
         <div class="form-group">
             <label for="tags">Tags</label>
-            <input class="form-control" type="text" name="tags" id="tags" value="@bookmark.Tags" placeholder="tag1, tag2">
+            <input class="form-control" type="text" name="tags" id="tags" value="@string.Join(", ", bookmark.Tags.Select(t => t.Name))" placeholder="tag1, tag2">
             <!--<small><a href="#">View Tag List</a></small>-->
         </div>
         <!--
@@ -38,7 +38,7 @@
         <div class="form-group">
             <label for="folder" class="d-block">Folder</label>
             <select name="folder" id="folder" class="form-control d-inline-block">
-            <option></option>
+            <option>--Select Folder--</option>
             @foreach (var folder in folders)
             {
                 <option value="@folder.Id" selected="@(bookmark.Folder?.Id == folder.Id)"> @folder.ToMenuString() </option>

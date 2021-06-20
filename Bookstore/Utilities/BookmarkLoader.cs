@@ -15,13 +15,20 @@ namespace Bookstore.Utilities
     {
         private class Download
         {
-            private readonly HttpResponseMessage _response;
+            private readonly HttpResponseMessage? _response;
             public Download(HttpClient client, Uri uri)
             {
-                _response = client.GetAsync(uri).Result;
+                try
+                {
+                    _response = client.GetAsync(uri).Result;
+                }
+                catch (Exception)
+                {
+                    _response = null;
+                }
             }
             
-            public bool Success => _response.IsSuccessStatusCode;
+            public bool Success => _response?.IsSuccessStatusCode ?? false;
             public string? ContentType => _response?.Content.Headers.ContentType?.ToString();
             public bool IsImageMime => ContentType?.ToLower().Contains("image") ?? false;
             public bool IsHtmlMime => ContentType?.ToLower().Contains("html") ?? false;
