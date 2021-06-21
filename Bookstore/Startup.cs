@@ -32,8 +32,12 @@ namespace Bookstore
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
-            services.AddDbContext<BookmarksContext>(options =>
-                options.UseSqlite(_configuration.GetConnectionString("BookstoreContext")));
+            services
+                .AddEntityFrameworkSqlite()
+                .AddDbContext<BookmarksContext>((sp, options) =>
+                options
+                    .UseSqlite(_configuration.GetConnectionString("BookstoreContext"))
+                    .UseInternalServiceProvider(sp));
 
             string schema = CookieAuthenticationDefaults.AuthenticationScheme; // defaults to "Cookies"
             services.AddAuthorization(options =>

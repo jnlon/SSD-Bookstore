@@ -162,7 +162,7 @@ namespace Bookstore.Migrations
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "Id", "Admin", "PasswordHash", "PasswordSalt", "Username" },
-                values: new object[] { 1ul, false, "PkkqREI8rB4VNwDJ4AQBKx+JIHRu8lk2QX2QwAbbEcU=", "jlh9Hxo4Ebr82D6pEX322g==", "toast" });
+                values: new object[] { 1ul, false, "VO1GFAwvOi0/GypNkRUxjf6NxP3DPydp4f/OGqlEbtg=", "zQUi+almpOhoaMUr3zfsAw==", "toast" });
 
             migrationBuilder.InsertData(
                 table: "Folders",
