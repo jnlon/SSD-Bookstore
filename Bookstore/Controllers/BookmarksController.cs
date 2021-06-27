@@ -112,7 +112,7 @@ namespace Bookstore.Controllers
         {
             public Uri Url { get; set; }
             public string Title { get; set; }
-            public string Tags { get; set; }
+            public string? Tags { get; set; }
             public ulong? Folder { get; set; }
             public string? NewFolder { get; set; } // Only if user chooses to create a new folder
         }
@@ -135,7 +135,7 @@ namespace Bookstore.Controllers
             
             // Add tags from upload to bookmark entity, re-using tags on users account if they exist
             var th = new TagHelper(_context.Tags, user.Id);
-            foreach (string tagName in th.ParseTagList(upload.Tags))
+            foreach (string tagName in th.ParseTagList(upload.Tags ?? string.Empty))
                 bookmark.Tags.Add(th.GetOrCreateNewTag(tagName));
 
             // 1. if the folder ID not-null and does not exist in folder list:

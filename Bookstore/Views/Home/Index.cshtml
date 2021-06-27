@@ -1,49 +1,19 @@
 ﻿@using Microsoft.CodeAnalysis.CSharp.Syntax
 @using System.Collections.ObjectModel
+@using Bookstore.Utilities
 @{
     ViewData["Title"] = "Home Page";
-    List<Folder> folders = ViewData["Folders"] as List<Folder>;
-    /*
-    ViewData["Bookmarks"] = new List<Bookmark>()
-    {
-        new Bookmark()
-        {
-            Archive = null,
-            Created = DateTime.Now,
-            Favicon = new byte[]{},
-            Folder = new Folder(){ Name = "Example_Folder"},
-            Id = 0,
-            Modified = DateTime.Now,
-            Tags = new Collection<Tag>(),
-            Title = "Example Bookmark",
-            Url = new Uri("https://www.example.com"),
-            User = null
-        },
-        
-        new Bookmark()
-        {
-            Archive = null,
-            Created = DateTime.Now,
-            Favicon = new byte[]{},
-            Folder = new Folder() { Name = "Example_Folder"},
-            Id = 0,
-            Modified = DateTime.Now,
-            Tags = new Collection<Tag>(),
-            Title = "Example Bookmark #2",
-            Url = new Uri("https://www.example.com/2"),
-            User = null
-        }
-    };
-    */
+    var folders = ViewData["Folders"] as List<Folder>;
+    var search = ViewData["Search"] as SearchQuery;
 }
 
 <div class="m-4">
     <!-- Query Bar -->
     <div class="bg-light p-2">
-        <form>
+        <form method="get" asp-route="Index">
             <fieldset class="d-flex justify-content-between">
-                <input style="width: 84%" type="text" class="form-control d-inline-block" placeholder="Bookmark Query">
-                <input style="width: 15%" type="submit" name="search" value="Search" class="d-inline-block">
+                <input style="width: 84%" name="search" type="text" class="form-control d-inline-block" value="@search.Query" placeholder="Bookmark Query">
+                <input style="width: 15%" type="submit" class="d-inline-block">
             </fieldset>
         </form>
     </div>
