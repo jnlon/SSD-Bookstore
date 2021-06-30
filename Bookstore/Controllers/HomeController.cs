@@ -33,7 +33,7 @@ namespace Bookstore.Controllers
             {
                 SearchQueryField.Archived => bm => bm.Archive == null,
                 SearchQueryField.Folder => bm => bm.Folder?.ToMenuString() ?? string.Empty,
-                SearchQueryField.Tag => bm => string.Join(",", bm.Tags.ToList().OrderBy(tag => tag)),
+                SearchQueryField.Tag => bm => string.Join(",", bm.Tags.ToList().OrderBy(tag => tag.Name)),
                 SearchQueryField.Title => bm => bm.Title,
                 SearchQueryField.Url => bm => bm.Url.ToString()
             };
@@ -49,66 +49,7 @@ namespace Bookstore.Controllers
                .Single(u => u.Id == _userId)
                .Bookmarks;
 
-           IEnumerable<Bookmark> query = allBookmarks;
-
-           // Apply filters for tag
-
-           bool ApplyUrlFilters(Uri urlValue, IEnumerable<IEnumerable<string>> filters)
-           {
-               foreach (IEnumerable<string> filter in filters)
-                   if (filter.All(filterArguments => urlValue.ToString().ToLower().Contains(filterArguments.ToLower())))
-                       return true;
-
-               return false;
-           }
-
-           bool ApplyTagFilters(IEnumerable<Tag> tagValues, IEnumerable<IEnumerable<string>> filters)
-           {
-               string[] tagValuesLower = tagValues.Select(f => f.Name.ToLower()).ToArray();
-               foreach (IEnumerable<string> filter in filters)
-                   if (filter.All(filterArguments => tagValuesLower.Contains(filterArguments.ToLower())))
-                       return true;
-
-               return false;
-           }
-
-           bool ApplyFolderFilters(Folder? folderValues, IEnumerable<IEnumerable<string[]>> filters)
-           {
-               string[] folderNamesLower = folderValues?.ToArray().Select(folder => folder.Name.ToLower()).ToArray() ?? new string[] {};
-               foreach (IEnumerable<string[]> filter in filters)
-                   if (filter.All(filterArguments => folderNamesLower.SequenceEqual(filterArguments.Select(fa => fa.ToLower()))))
-                       return true;
-
-               return false;
-           }
-
-           bool ApplyContentFilter(Archive? archiveValue, IEnumerable<IEnumerable<string>> filters)
-           {
-               string plaintext = archiveValue?.PlainText.ToLower() ?? "";
-               foreach (IEnumerable<string> filter in filters)
-                   if (filter.All(filterArguments => plaintext.Contains(filterArguments.ToLower())))
-                       return true;
-
-               return false;
-           }
-
-           if (search.ArchivedFilter != null)
-               query = query.Where(b => (b.Archive is not null) == search.ArchivedFilter);
-
-           if (search.TitleFilter.Count > 0)
-               query = query.Where(b => search.TitleFilter.Any(filter => b.Title.ToLower().Contains(filter.ToLower())));
-
-           if (search.UrlFilter.Count > 0)
-               query = query.Where(b => ApplyUrlFilters(b.Url, search.UrlFilter));
-
-           if (search.TagFilter.Count > 0)
-               query = query.Where(b => ApplyTagFilters(b.Tags, search.TagFilter));
-
-           if (search.FolderFilter.Count > 0)
-               query = query.Where(b => ApplyFolderFilters(b.Folder, search.FolderFilter));
-
-           if (search.ContentFilter.Count > 0)
-               query = query.Where(b => ApplyContentFilter(b.Archive, search.ContentFilter));
+           IEnumerable<Bookmark> query = allBookmarks.Where(search.PassesAllFilters);
 
            // Apply sort on selected field
            if (search.SortDescending)
