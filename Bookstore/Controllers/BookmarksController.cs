@@ -1,11 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.Http;
-using System.Net.NetworkInformation;
-using System.Security.Cryptography.Xml;
-using Bookstore.Constants.Authorization;
 using Bookstore.Controllers.Helpers;
 using Bookstore.Models;
 using Bookstore.Models.View;
@@ -37,12 +33,16 @@ namespace Bookstore.Controllers
         [HttpGet]
         public FileContentResult Favicon(ulong id)
         {
-            var user = _context.GetUser(User).Include(u => u.Bookmarks).First();
-            var icon = user.Bookmarks.Single(bm => bm.Id == id).Favicon;
+            User user = _context.GetUser(User).Include(u => u.Bookmarks).First();
+            Bookmark bookmark = user.Bookmarks.Single(bm => bm.Id == id);
+            byte[] icon = bookmark.Favicon ?? new byte[]{};
+            string iconMimeType = bookmark.FaviconMime ?? "";
+            var result = new FileContentResult(icon, iconMimeType);
+            
             Response.Headers.Add("Cache-Control", "public, immutable");
             Response.Headers.Add("Expires", "Fri, 01 Jan 2500 00:00:00 +0000");
             Response.Headers.Add("Content-Length", $"{icon.Length}");
-            var result = new FileContentResult(icon, "image/png");
+            
             return result;
         }
         
@@ -58,6 +58,7 @@ namespace Bookstore.Controllers
                 Created = DateTime.Now,
                 Modified = DateTime.Now,
                 Favicon = load.Favicon,
+                FaviconMime = load.FaviconMimeType,
                 Folder = null,
                 Tags = new HashSet<Tag>(),
                 Title = load.Title,
@@ -167,7 +168,7 @@ namespace Bookstore.Controllers
             
             // TODO: Update bookmark folder ID?
             _context.SaveChanges();
-            return RedirectToAction(nameof(Index), "Home");
+            return RedirectToAction(nameof(Index), "Bookstore");
         }
     }
 }

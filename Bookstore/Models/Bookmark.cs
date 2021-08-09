@@ -15,6 +15,7 @@ namespace Bookstore.Models
         public Uri Url { get; set; }
         public string Title { get; set; }
         public byte[]? Favicon { get; set; }
+        public string? FaviconMime { get; set; }
         public HashSet<Tag> Tags { get; set; }
         
         // ????

@@ -8,7 +8,7 @@ namespace Bookstore.Models
         public ulong Id { get; set; }
         public ulong UserId { get; set; }
         public string Name { get; set; }
-        public Folder? Parent { get; set; } // When parent is null, this folder is exists at the root
+        public Folder? Parent { get; set; } // When parent is null, this folder exists at the root
         public ulong? ParentId { get; set; }
         public List<Bookmark> Bookmarks { get; set; }
 
@@ -23,6 +23,11 @@ namespace Bookstore.Models
         public Folder[] ToArray()
         {
             return ToArray(this);
+        }
+
+        public string[] ToStringArray()
+        {
+            return ToArray().Select(f => f.Name).ToArray();
         }
 
         public string ToMenuString()

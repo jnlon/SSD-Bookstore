@@ -4,7 +4,14 @@
 @{
     ViewData["Title"] = "Home Page";
     var folders = ViewData["Folders"] as List<Folder>;
-    var search = ViewData["Search"] as SearchQuery;
+    SearchQuery search = (ViewData["Search"] as SearchQuery)!;
+    
+    string TruncateTitle(string text)
+    {
+        return text.Length > 115
+            ? text.Substring(0, 115) + "..."
+            : text;
+    }
 }
 
 <div class="m-4">
@@ -18,19 +25,19 @@
         </form>
     </div>
 
-    <form>
+    <form method="post">
         <!-- Table Controls -->
         <span class="font-weight-bold">Bookmark Actions</span>
         
         <div class="d-flex justify-content-between my-2">
             <div class="w-50">
-                <input type="submit" name="action" class="btn btn-primary" value="Archive">
-                <input type="submit" name="action" class="btn btn-primary" value="Edit">
-                <input type="submit" name="action" class="btn btn-danger" value="Delete">
-                <button class="btn btn-secondary">Select All</button>
+                <input id="bookstore-control-archive" type="submit" name="action" class="btn btn-primary" value="Archive">
+                <input id="bookstore-control-edit" type="submit" name="action" class="btn btn-primary" value="Edit">
+                <input id="bookstore-control-delete" type="submit" name="action" class="btn btn-danger" value="Delete">
+                <button id="bookstore-control-select-all" type="button"  class="btn btn-success">Select All</button>
             </div>
             
-            <div class="d-flex justify-content-end w-50">
+            <div class="d-flex justify-content-end">
                 <!--
                 <select class="form-control d-inline-block" style="width:10em">
                     <option selected>Sort By...</option>
@@ -41,27 +48,36 @@
                     <option>Tags</option>
                 </select>
                 -->
+                <input id="bookstore-control-filter" class="form-control d-inline-block" type="text" placeholder="Filter Bookmarks">
                 <a class="ml-2 btn btn-success" asp-controller="Bookmarks" asp-action="Create">New Bookmark</a>
             </div>
         </div>
         
         <!-- Main Table -->
-        <table class="table table-sm">
+        <table id="bookstore-table" class="table table-sm">
             <thead>
             <tr>
                 <th class="text-center">Select</th>
-                <th class="text-center"><a title="Sort by Folder" href="?sortBy=folder">Folder &#x296E;</a></th>
-                <th><a title="Sort by Bookmark" href="?sortBy=bookmark">Bookmark &#x296E;</a></th>
-                <th class="text-center"><a title="Sort by Tag" href="?sortBy=tag">Tags &#x296E;</a></th>
-                <th class="text-center"><a title="Sort by Archive Status" href="?sortBy=archive">Archive &#x296E;</a></th>
+                <th class="text-center">
+                    <a title="Sort by Folder" href="?search=sort(folder, @(search.SortField == SearchQueryField.Folder && !search.SortDescending ? "desc" : "asc"))">Folder &#x296E;</a>
+                </th>
+                <th>
+                    <a title="Sort by Bookmark" href="?search=sort(title, @(search.SortField == SearchQueryField.Title && !search.SortDescending ? "desc" : "asc"))">Bookmark &#x296E;</a>
+                </th>
+                <th class="text-center">
+                    <a title="Sort by Tag" href="?search=sort(tag, @(search.SortField == SearchQueryField.Tag && !search.SortDescending ? "desc" : "asc"))">Tags &#x296E;</a>
+                </th>
+                <th class="text-center">
+                    <a title="Sort by Archive Status" href="?search=sort(archived, @(search.SortField == SearchQueryField.Archived && !search.SortDescending ? "desc" : "asc"))">Archive &#x296E;</a>
+                </th>
             </tr>
             </thead>
-            <tbody>
+            <tbody id="bookstore-table-body">
                 @foreach (var bookmark in (ViewData["Bookmarks"] as List<Bookmark>)!)
                 {
                     <tr>
                         <td class="text-center align-middle">
-                            <input type="checkbox" class="form-check mx-auto" style="height: 1.5em; width: 1.5em;" name="selected" id="@bookmark.Id">
+                            <input type="checkbox" class="form-check mx-auto" style="height: 1.5em; width: 1.5em;" name="selected" value="@bookmark.Id" id="@bookmark.Id">
                         </td>
                         <td class="text-center align-middle">
                             <!-- TODO: Expand this out to include parent folders -->
@@ -72,7 +88,7 @@
                             }
                             @foreach (var folder in bookmarkFolders)
                             {
-                                <a href="?sortBy=folder:{@folder.Id}">@folder.Name</a>
+                                <a href="?search=folder(@folder.ToMenuString())" class="bookstore-table-folder">@folder.Name</a>
                                 @if (folder.Id != bookmarkFolders.Last().Id)
                                 {
                                     <span>&gt;</span>
@@ -80,20 +96,21 @@
                             }
                         </td> 
                         <td class="align-middle">
-                            <img style="width: 1.5em; height: 1.5em;" src="~/Bookmarks/Favicon/@bookmark.Id">
-                            <a href="@bookmark.Url">@bookmark.Title</a>
+                            @if (bookmark.Favicon != null)
+                            {
+                                <img style="width: 1.5em; height: 1.5em;" src="~/Bookmarks/Favicon/@bookmark.Id">
+                            }
+                            <a href="@bookmark.Url" class="bookstore-table-link" title="@bookmark.Title">@TruncateTitle(bookmark.Title)</a>
                         </td>
                         <td class="text-center align-middle">
                             @{ var sortedBookmarkTags = bookmark.Tags?.OrderBy(t => t.Name).ToList() ?? new List<Tag>();}
                             @foreach (var tag in sortedBookmarkTags)
                             {
-                                <a href="?tag=@tag.Name">@tag.Name</a><span>@(tag != sortedBookmarkTags.Last() ? "," : "")</span>
+                                <a class="bookstore-table-tag" href="?search=tag(@tag.Name)">@tag.Name</a><span>@(tag != sortedBookmarkTags.Last() ? "," : "")</span>
                             }
                         </td>
                         <td class="text-center align-middle">
-                            @if (bookmark.Archive == null) {
-                                @Html.Raw("Not Archived")
-                            } else {
+                            @if (bookmark.Archive != null) {
                                 <a href="#">Archive Link</a>
                             }
                         </td>

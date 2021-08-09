@@ -85,7 +85,8 @@ namespace Bookstore.Migrations
                     Modified = table.Column<DateTime>(type: "TEXT", nullable: false),
                     Url = table.Column<string>(type: "TEXT", nullable: false),
                     Title = table.Column<string>(type: "TEXT", nullable: false),
-                    Favicon = table.Column<byte[]>(type: "BLOB", nullable: true)
+                    Favicon = table.Column<byte[]>(type: "BLOB", nullable: true),
+                    FaviconMime = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -160,9 +161,14 @@ namespace Bookstore.Migrations
                 values: new object[] { 1ul, "Bun", null, 1ul });
 
             migrationBuilder.InsertData(
+                table: "Folders",
+                columns: new[] { "Id", "Name", "ParentId", "UserId" },
+                values: new object[] { 4ul, "Other Bookmarks", null, 1ul });
+
+            migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "Id", "Admin", "PasswordHash", "PasswordSalt", "Username" },
-                values: new object[] { 1ul, false, "VO1GFAwvOi0/GypNkRUxjf6NxP3DPydp4f/OGqlEbtg=", "zQUi+almpOhoaMUr3zfsAw==", "toast" });
+                values: new object[] { 1ul, false, "zP42DMlKI1M5OnHa8WQE91ltimcMkFCwPV/dhgBW2To=", "dTsN2UHPC/4kakd2xBJPyw==", "toast" });
 
             migrationBuilder.InsertData(
                 table: "Folders",

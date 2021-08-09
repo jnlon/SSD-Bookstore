@@ -11,17 +11,18 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using Bookstore.Utilities;
+using Microsoft.AspNetCore.Routing;
 
 namespace Bookstore.Controllers
 {
     [Authorize(Policy = "MemberOnly")]
-    public class HomeController : Controller
+    public class BookstoreController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private readonly ILogger<BookstoreController> _logger;
         private readonly BookmarksContext _context;
         private ulong _userId;
 
-        public HomeController(ILogger<HomeController> logger, BookmarksContext context)
+        public BookstoreController(ILogger<BookstoreController> logger, BookmarksContext context)
         {
             _logger = logger;
             _context = context;
@@ -60,6 +61,7 @@ namespace Bookstore.Controllers
            return query.ToList();
         }
 
+        [HttpGet]
         public IActionResult Index(string? search)
         {
             _userId = ulong.Parse(User.FindFirstValue(Claims.UserId));
@@ -70,7 +72,19 @@ namespace Bookstore.Controllers
             
             return View();
         }
+        
+        [HttpPost]
+        public /*string*/ IActionResult Index(string action, string[] selected)
+        {
+            if (action == "Edit" && selected.Length == 1)
+            {
+                return RedirectToAction("Edit", "Bookmarks",new RouteValueDictionary() {{"id", selected[0]}});
+            }
 
+            return View("Error", new ErrorViewModel($"Invalid Action: {action}", nameof(BookstoreController), nameof(Index)));
+            //return $"Action = {action}, selected = {string.Join(",", selected)}";
+        }
+        
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {

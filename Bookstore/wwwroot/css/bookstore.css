@@ -1,0 +1,8 @@
+#bookstore-table-body tr:hover {
+    cursor: pointer;
+    background-color: #F7F6C4;
+}
+
+.bookstore-table-link {
+    user-select: all;
+}

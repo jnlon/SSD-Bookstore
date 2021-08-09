@@ -51,26 +51,26 @@ namespace Bookstore.Utilities
         public readonly bool? ArchivedFilter;
 
         // Note: The inner collection performs logical-AND filter, the outer-list is logical OR
-        private readonly IReadOnlyList<SearchQueryFunction> TagFilter;
-        private readonly IReadOnlyList<SearchQueryFunction> FolderFilter;
-        private readonly IReadOnlyList<SearchQueryFunction> UrlFilter;
-        private readonly IReadOnlyList<SearchQueryFunction> ContentFilter;
-        private readonly IReadOnlyList<SearchQueryFunction> TitleFilter;
-        private readonly IReadOnlyList<SearchQueryFunction> GeneralFilter;
+        private readonly IReadOnlyList<SearchQueryFunction> _tagFilter;
+        private readonly IReadOnlyList<SearchQueryFunction> _folderFilter;
+        private readonly IReadOnlyList<SearchQueryFunction> _urlFilter;
+        private readonly IReadOnlyList<SearchQueryFunction> _contentFilter;
+        private readonly IReadOnlyList<SearchQueryFunction> _titleFilter;
+        private readonly IReadOnlyList<SearchQueryFunction> _generalFilter;
         
         public SearchQuery(string? query)
         {
             QueryString = query ?? string.Empty;;
             
-            ContentFilter = SearchQueryFunction.FromQuery(QueryString, "content");
-            FolderFilter = SearchQueryFunction.FromQuery(QueryString, "folder");
-            TagFilter = SearchQueryFunction.FromQuery(QueryString, "tag");
-            UrlFilter = SearchQueryFunction.FromQuery(QueryString, "url");
-            TitleFilter = SearchQueryFunction.FromQuery(QueryString, "title");
+            _contentFilter = SearchQueryFunction.FromQuery(QueryString, "content");
+            _folderFilter = SearchQueryFunction.FromQuery(QueryString, "folder");
+            _tagFilter = SearchQueryFunction.FromQuery(QueryString, "tag");
+            _urlFilter = SearchQueryFunction.FromQuery(QueryString, "url");
+            _titleFilter = SearchQueryFunction.FromQuery(QueryString, "title");
 
             // Populate SearchQueryFunction.SplitArguments using the supplied regex
-            var folderSplit = new Regex(@"[>/]");
-            foreach (var filter in FolderFilter)
+            var folderSplit = new Regex(@"\s*[>/]\s*");
+            foreach (var filter in _folderFilter)
             {
                 filter.SplitAndLowerArguments(folderSplit);
             }
@@ -84,13 +84,13 @@ namespace Bookstore.Utilities
                 .FirstOrDefault();
             
             // Use the first sort function
-            var sort = SearchQueryFunction.FromQuery(QueryString, "title").FirstOrDefault();
+            var sort = SearchQueryFunction.FromQuery(QueryString, "sort").FirstOrDefault();
             if (sort is not null && sort.Arguments.Count == 2)
             {
-                if (Enum.TryParse(sort.Arguments[0], out SearchQueryField sortFieldParsed))
+                if (Enum.TryParse(sort.Arguments[0], true, out SearchQueryField sortFieldParsed))
                     SortField = sortFieldParsed;
                 
-                if (Enum.TryParse(sort.Arguments[1], out SortDirection sortDirectionParsed))
+                if (Enum.TryParse(sort.Arguments[1], true, out SortDirection sortDirectionParsed))
                     SortDescending = sortDirectionParsed == SortDirection.Desc;
             }
             
@@ -103,9 +103,9 @@ namespace Bookstore.Utilities
 
             // General filter isn't really a filter, but we put it in the same structure and treat every word as a filter argument
             if (generalFilter.Count > 0)
-                GeneralFilter = new List<SearchQueryFunction> {new(generalFilter)};
+                _generalFilter = new List<SearchQueryFunction> {new(generalFilter)};
             else
-                GeneralFilter = new List<SearchQueryFunction>();
+                _generalFilter = new List<SearchQueryFunction>();
         }
 
         private static bool GenericPassesFilter(Func<string, bool> passesFilterArgumentPredicate, IReadOnlyList<SearchQueryFunction> filters)
@@ -125,7 +125,7 @@ namespace Bookstore.Utilities
         {
             string[] tagStrings = tags.Select(t => t.Name).ToArray();
             bool PassesTagFilterArgument(string arg) => tagStrings.Contains(arg);
-            return GenericPassesFilter(PassesTagFilterArgument, TagFilter);
+            return GenericPassesFilter(PassesTagFilterArgument, _tagFilter);
         }
 
         private bool PassesGeneralFilter(Bookmark bm)
@@ -133,8 +133,8 @@ namespace Bookstore.Utilities
            bool PassesUriFilterArgument(string arg) => bm.Url.ToString().ToLower().Contains(arg.ToLower());
            bool PassesTitleFilterArgument(string arg) => bm.Title.ToLower().Contains(arg.ToLower());
            
-           return GenericPassesFilter(PassesUriFilterArgument, GeneralFilter)
-                  && GenericPassesFilter(PassesTitleFilterArgument, GeneralFilter);
+           return GenericPassesFilter(PassesUriFilterArgument, _generalFilter)
+                  && GenericPassesFilter(PassesTitleFilterArgument, _generalFilter);
         }
         
         private bool PassesArchiveFilter(Archive? archive)
@@ -154,28 +154,28 @@ namespace Bookstore.Utilities
         private bool PassesTitleFilter(string title)
         {
            bool PassesTitleFilterArgument(string arg) => title.ToLower().Contains(arg.ToLower());
-           return GenericPassesFilter(PassesTitleFilterArgument, TitleFilter);
+           return GenericPassesFilter(PassesTitleFilterArgument, _titleFilter);
         }
 
         private bool PassesContentFilter(Archive? archive)
         {
             // If content filter is present, always exclude non-archived bookmarks
-            if (ContentFilter.Count > 0 && archive == null)
+            if (_contentFilter.Count > 0 && archive == null)
                 return false;
             
             bool PassesContentFilterArgument(string arg) => archive.PlainText.ToLower().Contains(arg.ToLower());
-            return GenericPassesFilter(PassesContentFilterArgument, ContentFilter);
+            return GenericPassesFilter(PassesContentFilterArgument, _contentFilter);
         }
 
         private bool PassesUrlFilter(Uri url)
         {
             bool PassesUriFilterArgument(string arg) => url.ToString().ToLower().Contains(arg.ToLower());
-            return GenericPassesFilter(PassesUriFilterArgument, UrlFilter);
+            return GenericPassesFilter(PassesUriFilterArgument, _urlFilter);
         }
         
         private bool PassesFolderFilter(Folder? folder)
         {
-            if (FolderFilter.Count == 0)
+            if (_folderFilter.Count == 0)
                 return true;
             
             string[] folderStringArray = folder
@@ -183,7 +183,7 @@ namespace Bookstore.Utilities
                 .Select(f => f.Name.ToLower())
                 .ToArray() ?? new string[]{};
 
-            foreach (var filter in FolderFilter)
+            foreach (var filter in _folderFilter)
                 if (filter.SplitArguments.All(arg => folderStringArray.SequenceEqual(arg)))
                     return true;
             

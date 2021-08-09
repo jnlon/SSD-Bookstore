@@ -10,7 +10,15 @@
     <form class="d-block" asp-controller="Bookmarks" asp-action="Edit" method="POST" style="width: 40em">
         <div class="form-group">
             <label for="url">URL</label>
-            <input class="form-control" type="text" name="url" id="url" value="@bookmark.Url" placeholder="https://example.com">
+            <div class="d-flex align-items-center">
+                <input class="form-control" type="text" name="url" id="url" value="@bookmark.Url" placeholder="https://example.com"> 
+                @if (@bookmark.Favicon != null)
+                {
+                    <label class="mb-0 ml-1" for="url" style="cursor:pointer;">
+                        <img style="max-width: 1.5em; max-height: 1.5em;" src="~/Bookmarks/Favicon/@bookmark.Id">
+                    </label>
+                }
+            </div>
         </div>
         <div class="form-group">
             <label for="title">Title</label>
@@ -58,10 +66,6 @@
             <label for="keywords">Keywords</label>
             <input class="" type="text" name="keywords" id="keywords" placeholder="keyword1, keyword2">
         </div>-->
-        <div class="form-group mt-3">
-            <span>Icon</span>
-            <img src="~/Bookmarks/Favicon/@bookmark.Id">
-        </div>
         
         <div>
             <input type="submit" name="save" class="btn btn-success" value="Save Bookmark">

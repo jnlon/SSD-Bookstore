@@ -41,6 +41,7 @@ namespace Bookstore.Models
             builder.Entity<Folder>().HasData(new Folder() { Id = 1, Name = "Bun", ParentId = null, UserId = user.Id });
             builder.Entity<Folder>().HasData(new Folder() { Id = 2, Name = "Cheese", ParentId = 1, UserId = user.Id });
             builder.Entity<Folder>().HasData(new Folder() { Id = 3, Name = "Meat", ParentId = 2, UserId = user.Id });
+            builder.Entity<Folder>().HasData(new Folder() { Id = 4, Name = "Other Bookmarks", ParentId = null, UserId = user.Id });
         }
 
         protected override void OnModelCreating(ModelBuilder builder)
