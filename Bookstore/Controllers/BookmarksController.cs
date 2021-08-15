@@ -95,7 +95,10 @@ namespace Bookstore.Controllers
             if (bookmark == null)
                 return View("Error", new ErrorViewModel($"Unable to find bookmark with ID = {id}", nameof(BookmarksController), nameof(Edit)) );
 
-            ViewData["Folders"] = _bookstore.QueryAllUserFolders();
+            ViewData["Folders"] = _bookstore.QueryAllUserFolders()
+                .ToList()
+                .OrderBy(f => f.ToMenuString())
+                .ToList();
             ViewData["Bookmark"] = bookmark;
             return View();
         }

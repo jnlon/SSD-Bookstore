@@ -36,19 +36,20 @@ namespace Bookstore.Utilities
                 .Include(bm => bm.Tags)
                 .Include(bm => bm.Archive)
                 .Include(bm => bm.User)
-                .Where(bm => bm.User.Id == _user.Id);
+                .Where(bm => bm.UserId == _user.Id);
         }
 
         public Bookmark? QuerySingleBookmarkById(ulong id)
         {
-            var bookmark = _context.Bookmarks.Find(id);
-            return bookmark.UserId == _user.Id ? bookmark : null; 
+            return _context.Bookmarks
+                .Include(bm => bm.Tags)
+                .Include(bm => bm.Folder)
+                .FirstOrDefault(bm => bm.Id == id && bm.UserId == _user.Id);
         }
 
         public IQueryable<Tag> QueryAllUserTags()
         {
-            return _context.Tags
-                .Where(tag => tag.UserId == _user.Id);
+            return _context.Tags.Where(tag => tag.UserId == _user.Id);
         }
 
         public IQueryable<Folder> QueryAllUserFolders()
@@ -56,6 +57,44 @@ namespace Bookstore.Utilities
             return _context.Folders
                 .Include(f => f.Parent)
                 .Where(f => f.UserId == _user.Id);
+        }
+
+        // Remove 
+        public void RefreshTagsAndFolders()
+        {
+            var bookmarksToDelete = _context.ChangeTracker
+                .Entries<Bookmark>()
+                .Where(e => e.State == EntityState.Deleted)
+                .Select(ent => ent.Entity)
+                .ToList();
+            
+            var allFolders = QueryAllUserFolders()
+                .Include(f => f.Bookmarks)
+                .ToList();
+            
+            // 2 conditions must be met before we attempt deleting the folder:
+            // - If any bookmarks exist, they are are going to be deleted
+            // - If any child folders exist, it contains no bookmarks or only bookmarks to be deleted
+            
+            bool CanDeleteFolder(Folder folder)
+            {
+                bool isEmptyFolder = folder
+                    .Bookmarks
+                    .All(bm => bookmarksToDelete.Any(tdl => tdl.Id == bm.Id));
+
+                return isEmptyFolder &&
+                       allFolders.Where(f => f.ParentId == folder.Id).All(CanDeleteFolder);
+            }
+            
+            var foldersToDelete = allFolders.Where(CanDeleteFolder).ToList();
+            var tagsToDelete = QueryAllUserTags()
+                .Include(tag => tag.Bookmarks)
+                .ToList()
+                .Where(tag => tag.Bookmarks.All(bm => bookmarksToDelete.Any(e => e.Id == bm.Id)))
+                .ToList();
+            
+            _context.Folders.RemoveRange(foldersToDelete);
+            _context.Tags.RemoveRange(tagsToDelete);
         }
     }
 }

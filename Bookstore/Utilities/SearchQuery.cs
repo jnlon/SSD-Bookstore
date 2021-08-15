@@ -52,7 +52,8 @@ namespace Bookstore.Utilities
 
         // Note: The inner collection performs logical-AND filter, the outer-list is logical OR
         private readonly IReadOnlyList<SearchQueryFunction> _tagFilter;
-        private readonly IReadOnlyList<SearchQueryFunction> _folderFilter;
+        private readonly IReadOnlyList<SearchQueryFunction> _singleFolderFilter;
+        private readonly IReadOnlyList<SearchQueryFunction> _recursiveFoldersFilter; // like folder but recursive
         private readonly IReadOnlyList<SearchQueryFunction> _urlFilter;
         private readonly IReadOnlyList<SearchQueryFunction> _contentFilter;
         private readonly IReadOnlyList<SearchQueryFunction> _titleFilter;
@@ -63,14 +64,21 @@ namespace Bookstore.Utilities
             QueryString = query ?? string.Empty;;
             
             _contentFilter = SearchQueryFunction.FromQuery(QueryString, "content");
-            _folderFilter = SearchQueryFunction.FromQuery(QueryString, "folder");
+            _singleFolderFilter = SearchQueryFunction.FromQuery(QueryString, "folder");
+            _recursiveFoldersFilter = SearchQueryFunction.FromQuery(QueryString, "folders");
             _tagFilter = SearchQueryFunction.FromQuery(QueryString, "tag");
             _urlFilter = SearchQueryFunction.FromQuery(QueryString, "url");
             _titleFilter = SearchQueryFunction.FromQuery(QueryString, "title");
 
             // Populate SearchQueryFunction.SplitArguments using the supplied regex
             var folderSplit = new Regex(@"\s*[>/]\s*");
-            foreach (var filter in _folderFilter)
+            
+            foreach (var filter in _singleFolderFilter)
+            {
+                filter.SplitAndLowerArguments(folderSplit);
+            }
+            
+            foreach (var filter in _recursiveFoldersFilter)
             {
                 filter.SplitAndLowerArguments(folderSplit);
             }
@@ -95,7 +103,7 @@ namespace Bookstore.Utilities
             }
             
             // all tokens that don't end with '(' and aren't inside some '()'
-            var allTagRegex = new Regex(@"\s?(content|folder|tag|archived|url|sort|title)\(.*?\)\s?");
+            var allTagRegex = new Regex(@"\s?(content|folder|folders|tag|archived|url|sort|title)\(.*?\)\s?");
             string queryWithoutFunctions = allTagRegex.Replace(QueryString, " ");
             var generalFilter = Regex.Split(queryWithoutFunctions, @"\s+")
                 .Where(s => s != String.Empty)
@@ -172,23 +180,44 @@ namespace Bookstore.Utilities
             bool PassesUriFilterArgument(string arg) => url.ToString().ToLower().Contains(arg.ToLower());
             return GenericPassesFilter(PassesUriFilterArgument, _urlFilter);
         }
-        
-        private bool PassesFolderFilter(Folder? folder)
+
+        private bool GenericFolderPasses(Folder? folder, IReadOnlyList<SearchQueryFunction> filters)
         {
-            if (_folderFilter.Count == 0)
-                return true;
-            
             string[] folderStringArray = folder
                 ?.ToArray()
                 .Select(f => f.Name.ToLower())
                 .ToArray() ?? new string[]{};
 
-            foreach (var filter in _folderFilter)
+            foreach (var filter in filters)
                 if (filter.SplitArguments.All(arg => folderStringArray.SequenceEqual(arg)))
                     return true;
-            
+
             return false;
         }
+        
+        private bool PassesSingleFolderFilter(Folder? folder)
+        {
+            if (_singleFolderFilter.Count == 0)
+                return true;
+
+            return GenericFolderPasses(folder, _singleFolderFilter);
+        }
+        
+        private bool PassesRecursiveFolderFilter(Folder? folder)
+        {
+            if (_recursiveFoldersFilter.Count == 0)
+                return true;
+
+            bool folderPasses = false;
+            while (folder != null && folderPasses == false)
+            {
+                folderPasses = GenericFolderPasses(folder, _recursiveFoldersFilter);
+                folder = folder.Parent;
+            }
+            
+            return folderPasses;
+        }
+        
 
         public bool PassesAllFilters(Bookmark bm)
         {
@@ -198,7 +227,8 @@ namespace Bookstore.Utilities
                 && PassesTitleFilter(bm.Title)
                 && PassesUrlFilter(bm.Url)
                 && PassesTagFilter(bm.Tags)
-                && PassesFolderFilter(bm.Folder)
+                && PassesSingleFolderFilter(bm.Folder)
+                && PassesRecursiveFolderFilter(bm.Folder)
                 && PassesContentFilter(bm.Archive);
         }
 

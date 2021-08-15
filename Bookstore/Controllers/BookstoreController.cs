@@ -64,24 +64,6 @@ namespace Bookstore.Controllers
             return View();
         }
         
-        // TODO: Move me somehere better!
-        private bool CanDeleteFolder(Folder folder, List<Bookmark> bookmarksToDelete, List<Folder> allFolders)
-        {
-            bool folderBookmarksWillBeDeleted = folder
-                .Bookmarks
-                .All(bm => bookmarksToDelete.Any(tdl => tdl.Id == bm.Id));
-            
-            if (folderBookmarksWillBeDeleted)
-            {
-                // All the child folders also contain only bookmarks to be deleted
-                return allFolders
-                    .Where(f => f.ParentId == folder.Id)
-                    .All(f => CanDeleteFolder(f, bookmarksToDelete, allFolders));
-            }
-
-            return false;
-        }
-        
         [HttpPost]
         public /*string*/ IActionResult Index(string action, ulong[] selected)
         {
@@ -95,34 +77,15 @@ namespace Bookstore.Controllers
                 // TODO: We need to store the functionality "re-scan library and delete folders/tags not currently used" somewhere
                 // because we also need this to occur when saving/editing existing bookmarks
 
-                var allFolders = _bookstore
-                    .QueryAllUserFolders()
-                    .Include(f => f.Bookmarks)
-                    .ToList();
-
                 var bookmarksToDelete = _bookstore
                     .QueryAllUserBookmarks()
                     .ToList()
                     .Where(bm => selected.Contains(bm.Id))
                     .ToList();
-
-                // Now we need to make sure 2 conditions are met before we attempt deleting the folder:
-                // - If any bookmarks exist, they are are going to be deleted
-                // - If any child folders exist, it contains no bookmarks or only bookmarks to be deleted
-                
-                var foldersToDelete = allFolders
-                    .Where(f => CanDeleteFolder(f, bookmarksToDelete, allFolders))
-                    .ToList();
-                
-                var tagsToDelete = _bookstore
-                    .QueryAllUserTags()
-                    .Include(tag => tag.Bookmarks)
-                    .ToList()
-                    .Where(tag => tag.Bookmarks.All(bm => bookmarksToDelete.Any(bmtd => bmtd.Id == bm.Id)));
                 
                 _context.Bookmarks.RemoveRange(bookmarksToDelete);
-                _context.Folders.RemoveRange(foldersToDelete);
-                _context.Tags.RemoveRange(tagsToDelete);
+                _bookstore.RefreshTagsAndFolders();
+                
                 _context.SaveChanges();
                 return Index(null);
             }

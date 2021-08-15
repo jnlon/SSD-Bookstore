@@ -88,7 +88,7 @@
                             }
                             @foreach (var folder in bookmarkFolders)
                             {
-                                <a href="?search=folder(@folder.ToMenuString())" class="bookstore-table-folder">@folder.Name</a>
+                                <a href="?search=folders(@folder.ToMenuString())" class="bookstore-table-folder">@folder.Name</a>
                                 @if (folder.Id != bookmarkFolders.Last().Id)
                                 {
                                     <span>&gt;</span>
