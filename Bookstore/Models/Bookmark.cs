@@ -8,6 +8,7 @@ namespace Bookstore.Models
     {
         public ulong Id { get; set; }
         public Archive? Archive { get; set; }
+        public ulong UserId { get; set; }
         public User User { get; set; }
         public Folder? Folder { get; set; } // When folder is null, this bookmark exists at the root
         public DateTime Created { get; set; }

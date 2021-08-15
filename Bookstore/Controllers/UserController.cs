@@ -22,10 +22,12 @@ namespace Bookstore.Controllers
     public class UserController : Controller
     {
         private readonly BookmarksContext _context;
+        private readonly BookstoreService _bookstore;
 
-        public UserController(BookmarksContext context)
+        public UserController(BookmarksContext context, BookstoreService bookstore)
         {
             _context = context;
+            _bookstore = bookstore;
         }
         
         // GET
@@ -42,7 +44,7 @@ namespace Bookstore.Controllers
         private void ImportNetscapeBookmarks(Stream stream)
         {
             //this.User
-            var importer = new NetscapeImporter(_context, new List<Folder>(), User);
+            var importer = new NetscapeImporter(_context, _bookstore);
             importer.Import(stream);
         }
 

@@ -22,15 +22,6 @@ namespace Bookstore.Models
         {
         }
 
-        public IQueryable<User> GetUser(ClaimsPrincipal user)
-        {
-            var maybeValue = user.FindFirst(Claims.UserId)?.Value;
-            if (maybeValue is null)
-                return null;
-            ulong value = ulong.Parse(maybeValue);
-            return Users.Where(u => u.Id == value);
-        }
-
         private void InsertDevelopmentData(ModelBuilder builder)
         {
             var (passwordHash, passwordSalt) = Crypto.GeneratePasswordHash("123");

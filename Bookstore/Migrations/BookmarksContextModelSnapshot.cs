@@ -217,8 +217,8 @@ namespace Bookstore.Migrations
                         {
                             Id = 1ul,
                             Admin = false,
-                            PasswordHash = "zP42DMlKI1M5OnHa8WQE91ltimcMkFCwPV/dhgBW2To=",
-                            PasswordSalt = "dTsN2UHPC/4kakd2xBJPyw==",
+                            PasswordHash = "h7GJYQPkyk/Z4PwR1VBmbw0EkL4xjEuvgV9m6hT7zZk=",
+                            PasswordSalt = "df699Qd+gKNdL/OKrN/J2Q==",
                             Username = "toast"
                         });
                 });

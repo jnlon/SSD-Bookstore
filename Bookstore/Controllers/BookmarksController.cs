@@ -17,11 +17,13 @@ namespace Bookstore.Controllers
     {
         private IHttpClientFactory _httpClientFactory;
         private readonly BookmarksContext _context;
+        private readonly BookstoreService _bookstore;
 
-        public BookmarksController(IHttpClientFactory clientFactory, BookmarksContext context)
+        public BookmarksController(IHttpClientFactory clientFactory, BookmarksContext context, BookstoreService bookstore)
         {
             _httpClientFactory = clientFactory;
             _context = context;
+            _bookstore = bookstore;
         }
         
         [HttpGet]
@@ -33,10 +35,12 @@ namespace Bookstore.Controllers
         [HttpGet]
         public FileContentResult Favicon(ulong id)
         {
-            User user = _context.GetUser(User).Include(u => u.Bookmarks).First();
-            Bookmark bookmark = user.Bookmarks.Single(bm => bm.Id == id);
-            byte[] icon = bookmark.Favicon ?? new byte[]{};
-            string iconMimeType = bookmark.FaviconMime ?? "";
+            // User user = _context.GetUser(User).Include(u => u.Bookmarks).First();
+            // Bookmark bookmark = user.Bookmarks.Single(bm => bm.Id == id);
+
+            Bookmark? bookmark = _bookstore.QuerySingleBookmarkById(id);
+            byte[] icon = bookmark?.Favicon ?? new byte[]{};
+            string iconMimeType = bookmark?.FaviconMime ?? "";
             var result = new FileContentResult(icon, iconMimeType);
             
             Response.Headers.Add("Cache-Control", "public, immutable");
@@ -50,11 +54,11 @@ namespace Bookstore.Controllers
         public IActionResult LoadAndEdit(Uri url)
         {
             var load = BookmarkLoader.Create(url, _httpClientFactory.CreateClient());
-            var user = _context.GetUser(User).Include(u => u.Bookmarks).First();
             
-            user.Bookmarks.Add(new Bookmark()
+            _context.Bookmarks.Add(new Bookmark()
             {
                 Archive = null, // TODO: Get based on form setting if this is enabled?
+                UserId = _bookstore.User.Id,
                 Created = DateTime.Now,
                 Modified = DateTime.Now,
                 Favicon = load.Favicon,
@@ -69,7 +73,8 @@ namespace Bookstore.Controllers
             
             // Now get the max bookmark ID for this user so we can fetch the URL
 
-            var bookmark = user.Bookmarks
+            var bookmark = _bookstore
+                .QueryAllUserBookmarks() //user.Bookmarks
                 .OrderByDescending(b => b.Id)
                 .First();
 
@@ -85,26 +90,12 @@ namespace Bookstore.Controllers
         [HttpGet]
         public IActionResult Edit(ulong id)
         {
-            var user = _context
-                .GetUser(User)
-                .Include(u => u.Bookmarks)
-                .ThenInclude(bm => bm.Tags)
-                .First();
-
-            Bookmark? bookmark =
-                user
-                .Bookmarks
-                .Find(b => b.Id == id);
+            Bookmark? bookmark = _bookstore.QuerySingleBookmarkById(id);
 
             if (bookmark == null)
                 return View("Error", new ErrorViewModel($"Unable to find bookmark with ID = {id}", nameof(BookmarksController), nameof(Edit)) );
 
-            var folders = _context
-                .Folders
-                .Where(f => f.UserId == user.Id)
-                .ToList();
-            
-            ViewData["Folders"] = folders;
+            ViewData["Folders"] = _bookstore.QueryAllUserFolders();
             ViewData["Bookmark"] = bookmark;
             return View();
         }
@@ -121,12 +112,16 @@ namespace Bookstore.Controllers
         [HttpPost]
         public IActionResult Edit([FromRoute] ulong id, [FromForm] BookmarkEditDto upload)
         {
-            var user = _context.GetUser(User)
-                .Include(u => u.Bookmarks)
-                .ThenInclude(bm => bm.Tags)
-                .First();
+            // var user = _context.GetUser(User)
+            //     .Include(u => u.Bookmarks)
+            //     .ThenInclude(bm => bm.Tags)
+            //     .First();
+
+            Bookmark? bookmark = _bookstore.QuerySingleBookmarkById(id); // .First(b => b.Id == id);
             
-            var bookmark = user.Bookmarks.First(b => b.Id == id);
+            if (bookmark == null)
+                return View("Error", new ErrorViewModel($"Unable to find bookmark with ID = {id}", nameof(BookmarksController), nameof(Edit)) );
+            
             bookmark.Modified = DateTime.Now;
             bookmark.Title = upload.Title;
             bookmark.Url = bookmark.Url;
@@ -135,7 +130,7 @@ namespace Bookstore.Controllers
             bookmark.Tags.Clear();
             
             // Add tags from upload to bookmark entity, re-using tags on users account if they exist
-            var th = new TagHelper(_context.Tags, user.Id);
+            var th = new TagHelper(_context.Tags, _bookstore.User.Id);
             foreach (string tagName in th.ParseTagList(upload.Tags ?? string.Empty))
                 bookmark.Tags.Add(th.GetOrCreateNewTag(tagName));
 
@@ -147,7 +142,7 @@ namespace Bookstore.Controllers
             // 3. Else:
             //  - Set folder equal to uploaded folder
 
-            var fh = new FolderHelper(_context.Folders, user.Id);
+            var fh = new FolderHelper(_context.Folders, _bookstore.User.Id);
 
             // Show error if the selected folder ID is provided but invalid (wrong user? stale entry? hack attempt?)
             if (!fh.ValidFolder(upload.Folder))

@@ -31,6 +31,9 @@ namespace Bookstore
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            
+            services.AddHttpContextAccessor();
+            
             services.AddControllersWithViews();
             services
                 .AddEntityFrameworkSqlite()
@@ -38,7 +41,7 @@ namespace Bookstore
                 options
                     .UseSqlite(_configuration.GetConnectionString("BookstoreContext"))
                     .UseInternalServiceProvider(sp));
-
+            
             string schema = CookieAuthenticationDefaults.AuthenticationScheme; // defaults to "Cookies"
             services.AddAuthorization(options =>
             {
@@ -58,6 +61,13 @@ namespace Bookstore
                     options.LogoutPath = "/account/logout";
                     options.AccessDeniedPath = "/account/denied";
                 });
+            
+            services.AddScoped<BookstoreService>(sp =>
+            {
+                var httpContextAccessor = sp.GetService<IHttpContextAccessor>();
+                var dbContext = sp.GetService<BookmarksContext>();
+                return new BookstoreService(httpContextAccessor?.HttpContext?.User, dbContext);
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

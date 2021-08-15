@@ -14,24 +14,21 @@ namespace Bookstore.Utilities
     {
         private BookmarksContext _context;
         private List<Folder> _folders;
+        private List<Tag> _tags;
         private User _user;
 
-        public NetscapeImporter(BookmarksContext context, List<Folder> userFolders, ClaimsPrincipal userClaim)
+        public NetscapeImporter(BookmarksContext context, BookstoreService bookstore)
         {
             _context = context;
-            _user = _context.GetUser(userClaim)
-               .Include(u => u.Bookmarks)
-               .First();
-            _folders = _context.Folders
-                .Include(f => f.Parent)
-                .Where(f => f.UserId == _user.Id)
-                .ToList();
+            _folders = bookstore.QueryAllUserFolders().ToList();
+            _tags = bookstore.QueryAllUserTags().ToList();
+            _user = bookstore.User;
         }
 
         private Tag ResolveTag(string tagName)
         {
            // Create new tag if it does not exist
-           Tag? tag = _context.Tags.FirstOrDefault(t => t.Name == tagName && t.UserId == _user.Id);
+           Tag? tag = _tags.FirstOrDefault(t => t.Name == tagName && t.UserId == _user.Id);
            
            if (tag is null)
            {
@@ -41,6 +38,7 @@ namespace Bookstore.Utilities
                    UserId = _user.Id
                };
                _context.Tags.Add(tag);
+               _tags.Add(tag);
            }
            
            return tag;

@@ -17,9 +17,11 @@ namespace Bookstore.Controllers
     public class DebugController : Controller
     {
         private BookmarksContext _context;
-        public DebugController(BookmarksContext context)
+        private readonly BookstoreService _bookstore;
+        public DebugController(BookmarksContext context, BookstoreService bookstore)
         {
             _context = context;
+            _bookstore = bookstore;
         }
         
         // GET
@@ -54,35 +56,38 @@ namespace Bookstore.Controllers
         
         public string AddBookmark(Uri url, string? title)
         {
-            if (string.IsNullOrWhiteSpace(url?.Host) || title is null)
-                return "Title and URL required";
-            
-            var user = _context.GetUser(User).Include(u => u.Bookmarks).First();
+            // if (string.IsNullOrWhiteSpace(url?.Host) || title is null)
+            //     return "Title and URL required";
+            // 
+            // var user = _context.GetUser(User).Include(u => u.Bookmarks).First();
 
-            if (user is null)
-                return "User is null?";
-            
-            // get root folder or create it
-            user.Bookmarks.Add(new Bookmark()
-            {
-                Archive = null,
-                Created = DateTime.Now,
-                Modified = DateTime.Now,
-                Tags = new HashSet<Tag>(),
-                Favicon = new byte[] { },
-                Title = title,
-                Url = url,
-                Folder = null
-            });
-            
-            return _context.SaveChanges().ToString();
+            // if (user is null)
+            //     return "User is null?";
+            // 
+            // // get root folder or create it
+            // user.Bookmarks.Add(new Bookmark()
+            // {
+            //     Archive = null,
+            //     UserId = user.Id,
+            //     Created = DateTime.Now,
+            //     Modified = DateTime.Now,
+            //     Tags = new HashSet<Tag>(),
+            //     Favicon = new byte[] { },
+            //     Title = title,
+            //     Url = url,
+            //     Folder = null
+            // });
+            // 
+            // return _context.SaveChanges().ToString();
+            return "";
         }
 
         public string ListBookmarks()
         {
-            var user = _context.GetUser(User).Include(u => u.Bookmarks).First();
-            var urls = user.Bookmarks.Select(b => b.Url);
-            return string.Join("\n", urls);
+            // var user = _context.GetUser(User).Include(u => u.Bookmarks).First();
+            // var urls = user.Bookmarks.Select(b => b.Url);
+            // return string.Join("\n", urls);
+            return "";
         }
 
         /*
