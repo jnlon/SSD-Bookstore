@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using Bookstore.Utilities;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Routing;
 
 namespace Bookstore.Controllers
@@ -29,38 +30,12 @@ namespace Bookstore.Controllers
             _bookstore = bookstore;
         }
 
-        private List<Bookmark> QueryBookmarks(SearchQuery search, int page, int pageCount)
-        {
-            Func<Bookmark, IComparable> orderby = search.SortField switch
-            {
-                SearchQueryField.Archived => bm => bm.Archive == null,
-                SearchQueryField.Folder => bm => bm.Folder?.ToMenuString() ?? string.Empty,
-                SearchQueryField.Tag => bm => string.Join(",", bm.Tags.ToList().OrderBy(tag => tag.Name)),
-                SearchQueryField.Title => bm => bm.Title,
-                SearchQueryField.Url => bm => bm.Url.ToString()
-            };
-
-            List<Bookmark> allBookmarks = _bookstore.QueryAllUserBookmarks().ToList();
-            
-            IEnumerable<Bookmark> query = allBookmarks.Where(search.PassesAllFilters);
-
-            // Apply sort on selected field
-            if (search.SortDescending)
-                query = query.OrderByDescending(orderby);
-            else
-                query = query.OrderBy(orderby);
-
-            return query.ToList();
-        }
-
         [HttpGet]
         public IActionResult Index(string? search)
         {
-            var searchQuery = new SearchQuery(search);
+            var searchQuery = new SearchQueryResult(new SearchQuery(search), 1, 500);
+            searchQuery.Execute(_bookstore);
             ViewData["Search"] = searchQuery;
-            ViewData["Folders"] = _bookstore.QueryAllUserFolders().ToList();
-            ViewData["Bookmarks"] = QueryBookmarks(searchQuery, 1, 500);
-            
             return View();
         }
         
