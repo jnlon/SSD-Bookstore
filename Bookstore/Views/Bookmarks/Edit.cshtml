@@ -1,34 +1,69 @@
 @using System.Text
 @{
     ViewData["Title"] = "Edit Bookmark";
-    Bookmark bookmark = (ViewData["Bookmark"] as Bookmark)!;
+    List<Bookmark> bookmarks = (ViewData["Bookmarks"] as List<Bookmark>)!;
     List<Folder> folders = (ViewData["Folders"] as List<Folder>)!;
+    Bookmark bookmark = bookmarks.First();
+    
+    HashSet<Tag> commonTags = bookmarks
+        .SelectMany(bm => bm.Tags)
+        .Where(tag => bookmarks.All(bm => bm.Tags.Contains(tag)))
+        .ToHashSet();
+    
+    Folder? commonFolder = bookmarks
+        .All(bm => bm.Folder != null && bm.Folder.Id == bookmark.Folder?.Id)
+        ? bookmark.Folder
+        : null;
 }
 
 <div class="m-3">
-    <h1>Edit Bookmark</h1>
+    
+    @if (bookmarks.Count > 1)
+    {
+        <h1>Edit Bookmarks</h1>
+        <div class="my-3">
+            <details>
+                <summary class="font-weight-bold">Editing @bookmarks.Count bookmarks</summary>
+                <ul>
+                    @foreach (var bm in bookmarks) { <li><a href="@bm.Url">@bm.Title</a></li> }
+                </ul>
+            </details>
+        </div>
+    }
+    else
+    {
+        <h1>Edit Bookmark</h1>
+    }
+    
     <form class="d-block" asp-controller="Bookmarks" asp-action="Edit" method="POST" style="width: 40em">
-        <div class="form-group">
+    
+        @foreach (var bm in bookmarks)
+        {
+            <input type="hidden" name="id" value="@bm.Id">
+        }
+    
+        <div class="form-group @(bookmarks.Count > 1 ? "d-none" : "")">
             <label for="url">URL</label>
             <div class="d-flex align-items-center">
-                <input class="form-control" type="text" name="url" id="url" value="@bookmark.Url" placeholder="https://example.com"> 
-                @if (@bookmark.Favicon != null)
-                {
-                    <label class="mb-0 ml-1" for="url" style="cursor:pointer;">
-                        <img style="max-width: 1.5em; max-height: 1.5em;" src="~/Bookmarks/Favicon/@bookmark.Id">
-                    </label>
-                }
+                    <input class="form-control" type="text" name="url" id="url" value="@bookmark.Url" placeholder="https://example.com">
+                    @if (@bookmark.Favicon != null)
+                    {
+                        <label class="mb-0 ml-1" for="url" style="cursor:pointer;">
+                            <img style="max-width: 1.5em; max-height: 1.5em;" src="~/Bookmarks/Favicon/@bookmark.Id">
+                        </label>
+                    }
             </div>
         </div>
-        <div class="form-group">
+        <div class="form-group @(bookmarks.Count > 1 ? "d-none" : "")">
             <label for="title">Title</label>
             <input class="form-control" type="text" name="title" id="title" value="@bookmark.Title" placeholder="Example Title">
         </div>
         <div class="form-group">
             <label for="tags">Tags</label>
-            <input class="form-control" type="text" name="tags" id="tags" value="@string.Join(", ", bookmark.Tags.Select(t => t.Name))" placeholder="tag1, tag2">
+            <input class="form-control" type="text" name="tags" id="tags" value="@string.Join(", ", commonTags.Select(t => t.Name))" placeholder="tag1, tag2">
             <!--<small><a href="#">View Tag List</a></small>-->
         </div>
+        
         <!--
         <div class="form-group">
             <label for="folder" class="d-block">Folder</label>
@@ -46,11 +81,11 @@
         <div class="form-group">
             <label for="folder" class="d-block">Folder</label>
             <select name="folder" id="folder" class="form-control d-inline-block">
-            <option>--Select Folder--</option>
-            @foreach (var folder in folders)
-            {
-                <option value="@folder.Id" selected="@(bookmark.Folder?.Id == folder.Id)"> @folder.ToMenuString() </option>
-            }
+                <option>--Select Folder--</option>
+                @foreach (var folder in folders)
+                {
+                    <option value="@folder.Id" selected="@(commonFolder?.Id == folder.Id)"> @folder.ToMenuString() </option>
+                }
             </select>
             
             <details class="mt-2">
@@ -62,13 +97,15 @@
             </details>
         </div>
         
-        <!--<div>
-            <label for="keywords">Keywords</label>
-            <input class="" type="text" name="keywords" id="keywords" placeholder="keyword1, keyword2">
-        </div>-->
-        
         <div>
-            <input type="submit" name="save" class="btn btn-success" value="Save Bookmark">
+            @if (bookmarks.Count > 1)
+            {
+                <input type="submit" name="save" class="btn btn-success" value="Update Bookmarks">
+            }
+            else
+            {
+                <input type="submit" name="save" class="btn btn-success" value="Save Bookmark">
+            }
         </div>
     </form>
 </div>

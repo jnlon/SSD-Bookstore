@@ -67,9 +67,9 @@ namespace Bookstore.Controllers
         [HttpPost]
         public /*string*/ IActionResult Index(string action, ulong[] selected)
         {
-            if (action == "Edit" && selected.Length == 1)
+            if (action == "Edit")
             {
-                return RedirectToAction("Edit", "Bookmarks",new RouteValueDictionary() {{"id", selected[0]}});
+                return RedirectToAction("Edit", "Bookmarks",new RouteValueDictionary() {{"ids", selected}});
             }
 
             if (action == "Delete")

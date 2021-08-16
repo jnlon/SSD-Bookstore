@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Bookstore.Migrations
 {
     [DbContext(typeof(BookmarksContext))]
-    [Migration("20210815214023_InitialCreate")]
+    [Migration("20210816011632_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -219,8 +219,8 @@ namespace Bookstore.Migrations
                         {
                             Id = 1ul,
                             Admin = false,
-                            PasswordHash = "h7GJYQPkyk/Z4PwR1VBmbw0EkL4xjEuvgV9m6hT7zZk=",
-                            PasswordSalt = "df699Qd+gKNdL/OKrN/J2Q==",
+                            PasswordHash = "futKLT7XXQbwt3PN/cYQhmmo6CgEmhwSxCPynoEUG+8=",
+                            PasswordSalt = "wHVCw8mkEY6KV82jwasbPg==",
                             Username = "toast"
                         });
                 });

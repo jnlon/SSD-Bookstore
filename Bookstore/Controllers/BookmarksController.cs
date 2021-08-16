@@ -88,18 +88,25 @@ namespace Bookstore.Controllers
         }
         
         [HttpGet]
-        public IActionResult Edit(ulong id)
+        public IActionResult Edit(ulong[] ids)
         {
-            Bookmark? bookmark = _bookstore.QuerySingleBookmarkById(id);
-
-            if (bookmark == null)
-                return View("Error", new ErrorViewModel($"Unable to find bookmark with ID = {id}", nameof(BookmarksController), nameof(Edit)) );
+            List<Bookmark?> bookmarks = new();
+            foreach (var id in ids)
+            {
+                var bookmark = _bookstore.QuerySingleBookmarkById(id);
+                
+                if (bookmark == null)
+                    return View("Error", new ErrorViewModel($"Unable to find bookmark with ID = {id}", nameof(BookmarksController), nameof(Edit)));
+                else
+                    bookmarks.Add(bookmark);
+            }
 
             ViewData["Folders"] = _bookstore.QueryAllUserFolders()
                 .ToList()
                 .OrderBy(f => f.ToMenuString())
                 .ToList();
-            ViewData["Bookmark"] = bookmark;
+            
+            ViewData["Bookmarks"] = bookmarks;
             return View();
         }
 
@@ -111,60 +118,67 @@ namespace Bookstore.Controllers
             public ulong? Folder { get; set; }
             public string? NewFolder { get; set; } // Only if user chooses to create a new folder
         }
-
-        [HttpPost]
-        public IActionResult Edit([FromRoute] ulong id, [FromForm] BookmarkEditDto upload)
+        
+        private void EditBookmark(ulong id, BookmarkEditDto upload, TagHelper th, Folder? folder, bool singleEdit)
         {
-            // var user = _context.GetUser(User)
-            //     .Include(u => u.Bookmarks)
-            //     .ThenInclude(bm => bm.Tags)
-            //     .First();
-
             Bookmark? bookmark = _bookstore.QuerySingleBookmarkById(id); // .First(b => b.Id == id);
-            
+
             if (bookmark == null)
-                return View("Error", new ErrorViewModel($"Unable to find bookmark with ID = {id}", nameof(BookmarksController), nameof(Edit)) );
+                throw new ArgumentException($"Unable to find bookmark with ID = {id}");
             
             bookmark.Modified = DateTime.Now;
-            bookmark.Title = upload.Title;
-            bookmark.Url = bookmark.Url;
+            bookmark.Folder = folder;
+            
+            if (singleEdit)
+            {
+                bookmark.Title = upload.Title;
+                bookmark.Url = bookmark.Url;
+            }
             
             // Clear previous tags
             bookmark.Tags.Clear();
             
             // Add tags from upload to bookmark entity, re-using tags on users account if they exist
-            var th = new TagHelper(_context.Tags, _bookstore.User.Id);
             foreach (string tagName in th.ParseTagList(upload.Tags ?? string.Empty))
                 bookmark.Tags.Add(th.GetOrCreateNewTag(tagName));
+        }
 
-            // 1. if the folder ID not-null and does not exist in folder list:
-            //  - Throw an error
-            // 2. If the new folder string is specified:
-            //  - create that folder
-            //  - set the bookmark folder to this new object
-            // 3. Else:
-            //  - Set folder equal to uploaded folder
-
-            var fh = new FolderHelper(_context.Folders, _bookstore.User.Id);
-
-            // Show error if the selected folder ID is provided but invalid (wrong user? stale entry? hack attempt?)
-            if (!fh.ValidFolder(upload.Folder))
-                return View("Error", new ErrorViewModel($"Folder with ID {id} does not exist", nameof(BookmarksController), nameof(Edit)) );
-
-            // By default, set selected folder as this bookmarks folder
-            if (upload.Folder is null)
-                bookmark.Folder = null;
-            else
-                bookmark.Folder = fh.GetFolder((ulong)upload.Folder);
-
-            // If a "new folder" string was given, treat the "Folder" drop-down selected item as the parent
-            if (upload.NewFolder is not null)
+        [HttpPost]
+        public IActionResult Edit([FromForm] ulong[] id, [FromForm] BookmarkEditDto upload)
+        {
+            bool singleEdit = id.Length == 1;
+            try
             {
-                Folder? parent = bookmark.Folder;
-                bookmark.Folder = fh.CreateFolder(upload.NewFolder, parent);
+                var fh = new FolderHelper(_bookstore, _context);
+                var th = new TagHelper(_bookstore, _context);
+                
+                if (!fh.ValidFolder(upload.Folder))
+                    throw new ArgumentException($"Folder with ID {id} does not exist");
+
+                // By default, set selected folder as this bookmarks folder
+                Folder? folder = null;
+                if (upload.Folder.HasValue)
+                {
+                    folder = fh.GetFolder((ulong)upload.Folder);
+                }
+                
+                // If a "new folder" string was given, treat the "Folder" drop-down selected item as the parent
+                if (upload.NewFolder is not null)
+                {
+                    Folder? parent = folder;
+                    folder = fh.CreateFolder(upload.NewFolder, parent);
+                }
+                
+                foreach (ulong bookmarkId in id)
+                {
+                    EditBookmark(bookmarkId, upload, th, folder, singleEdit);
+                }
+            }
+            catch (Exception e)
+            {
+                return View("Error", new ErrorViewModel(e.Message, nameof(BookmarksController), nameof(Edit)) );
             }
             
-            // TODO: Update bookmark folder ID?
             _context.SaveChanges();
             return RedirectToAction(nameof(Index), "Bookstore");
         }
