@@ -140,9 +140,13 @@ namespace Bookstore.Utilities
         {
            bool PassesUriFilterArgument(string arg) => bm.Url.ToString().ToLower().Contains(arg.ToLower());
            bool PassesTitleFilterArgument(string arg) => bm.Title.ToLower().Contains(arg.ToLower());
-           
+           bool PassesTagFilterArgument(string arg) => bm.Tags.Any(t => t.Name.ToLower() == arg.ToLower());
+           bool PassesFolderFilterArgument(string arg) => bm.Folder?.ToArray().Any(f => f.Name.ToLower() == arg.ToLower()) ?? false;
+
            return GenericPassesFilter(PassesUriFilterArgument, _generalFilter)
-                  && GenericPassesFilter(PassesTitleFilterArgument, _generalFilter);
+                  || GenericPassesFilter(PassesTitleFilterArgument, _generalFilter)
+                  || GenericPassesFilter(PassesTagFilterArgument, _generalFilter)
+                  || GenericPassesFilter(PassesFolderFilterArgument, _generalFilter);
         }
         
         private bool PassesArchiveFilter(Archive? archive)

@@ -59,6 +59,16 @@ namespace Bookstore.Utilities
                 .Where(f => f.UserId == _user.Id);
         }
 
+        public Settings GetUserSettings()
+        {
+            Settings? settings = _context.Users
+                .Include(u => u.Settings)
+                .FirstOrDefault(u => u.Id == _user.Id)
+                ?.Settings;
+
+            return settings ?? Settings.CreateDefault();
+        }
+
         // Remove 
         public void RefreshTagsAndFolders()
         {

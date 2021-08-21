@@ -31,16 +31,31 @@ namespace Bookstore.Controllers
         }
 
         [HttpGet]
-        public IActionResult Index(string? search)
+        public IActionResult Index(string? search, int page = 1)
         {
-            var searchQuery = new SearchQueryResult(new SearchQuery(search), 1, 500);
+            page = Math.Max(1, page);
+            Settings settings =_bookstore.GetUserSettings();
+            if (HttpContext.Request.Query.Keys.Count == 0 && settings?.DefaultQuery != null)
+            {
+                var qparams = new RouteValueDictionary() { { "search", settings?.DefaultQuery } };
+                return RedirectToAction(nameof(Index), "Bookstore", qparams);
+            }
+            SearchQueryResult searchQuery = new(new SearchQuery(search), page, settings.DefaultPaginationLimit);
             searchQuery.Execute(_bookstore);
+            
             ViewData["Search"] = searchQuery;
+            ViewData["Settings"] = settings;
+            ViewData["PageNumber"] = page;
+            
+            int pageCount = searchQuery.TotalQueriedBookmarks / settings.DefaultPaginationLimit;
+            bool evenPageCount = searchQuery.TotalQueriedBookmarks % settings.DefaultPaginationLimit == 0;
+            ViewData["MaxPageNumber"] = pageCount + (evenPageCount ? 0 : 1);
+            
             return View();
         }
         
         [HttpPost]
-        public /*string*/ IActionResult Index(string action, ulong[] selected)
+        public IActionResult Index(string action, ulong[] selected)
         {
             if (action == "Edit")
             {
@@ -49,9 +64,6 @@ namespace Bookstore.Controllers
 
             if (action == "Delete")
             {
-                // TODO: We need to store the functionality "re-scan library and delete folders/tags not currently used" somewhere
-                // because we also need this to occur when saving/editing existing bookmarks
-
                 var bookmarksToDelete = _bookstore
                     .QueryAllUserBookmarks()
                     .ToList()

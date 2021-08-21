@@ -14,19 +14,20 @@ namespace Bookstore.Utilities
         public int QueriedTags { get; private set; }
 
         public int TotalBookmarks { get; private set; }
+        public int TotalQueriedBookmarks { get; private set; }
         public int QueriedBookmarks { get; private set; }
 
         public SearchQuery Search { get; private set; }
         public List<Bookmark> Results { get; private set; }
 
         private int _page;
-        private int _pageCount;
+        private int _itemsPerPage;
 
-        public SearchQueryResult(SearchQuery search, int page, int pageCount)
+        public SearchQueryResult(SearchQuery search, int page, int itemsPerPage)
         {
             Search = search;
-            _page = page;
-            _pageCount = pageCount;
+            _page = Math.Max(1, page);
+            _itemsPerPage = itemsPerPage;
         }
 
         public void Execute(BookstoreService bookstore)
@@ -40,7 +41,8 @@ namespace Bookstore.Utilities
                 SearchQueryField.Url => bm => bm.Url.ToString()
             };
 
-            List<Bookmark> allBookmarks = bookstore.QueryAllUserBookmarks().ToList();
+            //List<Bookmark> allBookmarks = bookstore.QueryAllUserBookmarks().ToList();
+            var allBookmarks = bookstore.QueryAllUserBookmarks().ToList();
             
             IEnumerable<Bookmark> query = allBookmarks.Where(Search.PassesAllFilters);
 
@@ -50,9 +52,15 @@ namespace Bookstore.Utilities
             else
                 query = query.OrderBy(orderby);
 
-            Results = query.ToList();
+            TotalQueriedBookmarks = query.Count();
+
+            // Apply Pagination
+            Results = query
+                .Skip(_itemsPerPage * (_page - 1))
+                .Take(_itemsPerPage)
+                .ToList();
             
-            TotalBookmarks = allBookmarks.Count;
+            TotalBookmarks = allBookmarks.Count();
             QueriedBookmarks = Results.Count;
             
             TotalTags = bookstore.QueryAllUserTags().Count();

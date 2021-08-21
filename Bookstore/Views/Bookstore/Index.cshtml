@@ -2,6 +2,9 @@
 @{
     ViewData["Title"] = "Home Page";
     SearchQueryResult searchResult = (ViewData["Search"] as SearchQueryResult)!;
+    Settings settings = (ViewData["Settings"] as Settings)!;
+    int pageNumber = (int)ViewData["PageNumber"];
+    int maxPageNumber = (int)ViewData["MaxPageNumber"];
     SearchQuery search = searchResult.Search;
     
     string TruncateTitle(string text)
@@ -10,6 +13,9 @@
             ? text.Substring(0, 115) + "..."
             : text;
     }
+    
+    string? navDisableStart = pageNumber == 1 ? "disabled" : null;
+    string? navDisableEnd = pageNumber == maxPageNumber ? "disabled" : null;
 }
 
 <div class="m-4">
@@ -52,42 +58,88 @@
         </div>
         
         <div>
-            Queried @searchResult.QueriedBookmarks of @searchResult.TotalBookmarks bookmarks.
+            Showing @searchResult.QueriedBookmarks of @searchResult.TotalBookmarks bookmarks.
+        </div>
+        
+        <div>
+            <nav class="text-center justify-content-around d-flex justify-content-between mx-auto w-100">
+                <ul class="pagination d-inline-flex">
+                    <li class="page-item @navDisableStart">
+                        <a class="page-link " asp-controller="Bookstore" asp-action="Index" asp-route-search="@search.QueryString" asp-route-page="@Math.Max(pageNumber - 1, 1)">Previous</a>
+                    </li>
+                </ul>
+                <ul class="pagination d-inline-flex w-100 justify-content-center">
+                    <li class="page-item @navDisableStart">
+                        <a class="page-link" asp-controller="Bookstore" asp-action="Index" asp-route-search="@search.QueryString" asp-route-page="page">&laquo;</a>
+                    </li>
+                    @for (int pn = Math.Max(1, pageNumber - 5); pn <= Math.Min(pageNumber + 5, maxPageNumber); pn++)
+                    {
+                        <li class="page-item @(pageNumber == pn ? "active" : "")">
+                            <a class="page-link" asp-controller="Bookstore" asp-action="Index" asp-route-search="@search.QueryString" asp-route-page="@pn">@pn</a>
+                        </li>
+                    }
+                    <li class="page-item @navDisableEnd">
+                        <a class="page-link" asp-controller="Bookstore" asp-action="Index" asp-route-search="@search.QueryString" asp-route-page="@maxPageNumber">&raquo;</a>
+                    </li>
+                </ul>
+                <ul class="pagination d-inline-flex">
+                    <li class="page-item @navDisableEnd">
+                        <a class="page-link" asp-controller="Bookstore" asp-action="Index" asp-route-search="@search.QueryString" asp-route-page="@Math.Min(pageNumber + 1, maxPageNumber)">Next</a>
+                    </li>
+                </ul>
+            </nav>
         </div>
         
         <!-- Main Table -->
         <table id="bookstore-table" class="table table-sm">
             <thead>
-            <tr>
+            <tr style="white-space: nowrap">
                 <th class="text-center">Select</th>
                 <th class="text-center">
-                    <a title="Sort by Folder" href="?search=sort(folder, @(search.SortField == SearchQueryField.Folder && !search.SortDescending ? "desc" : "asc"))">Folder &#x296E;</a>
+                    <a
+                        title="Sort by Folder"
+                        asp-controller="Bookstore"
+                        asp-action="Index"
+                        asp-route-page="1"
+                        asp-route-search="@search.QueryString sort(folder, @(search.SortField == SearchQueryField.Folder && !search.SortDescending ? "desc" : "asc"))">
+                        Folder &#x296E;
+                    </a>
                 </th>
                 <th>
-                    <a title="Sort by Bookmark" href="?search=sort(title, @(search.SortField == SearchQueryField.Title && !search.SortDescending ? "desc" : "asc"))">Bookmark &#x296E;</a>
+                    <a
+                        title="Sort by Bookmark"
+                        href="?search=sort(title, @(search.SortField == SearchQueryField.Title && !search.SortDescending ? "desc" : "asc"))">
+                        Bookmark &#x296E;
+                    </a>
                 </th>
                 <th class="text-center">
-                    <a title="Sort by Tag" href="?search=sort(tag, @(search.SortField == SearchQueryField.Tag && !search.SortDescending ? "desc" : "asc"))">Tags &#x296E;</a>
+                    <a
+                        title="Sort by Tag"
+                        href="?search=sort(tag, @(search.SortField == SearchQueryField.Tag && !search.SortDescending ? "desc" : "asc"))">
+                        Tags &#x296E;
+                    </a>
                 </th>
                 <th class="text-center">
-                    <a title="Sort by Archive Status" href="?search=sort(archived, @(search.SortField == SearchQueryField.Archived && !search.SortDescending ? "desc" : "asc"))">Archive &#x296E;</a>
+                    <a
+                        title="Sort by Archive Status"
+                        href="?search=sort(archived, @(search.SortField == SearchQueryField.Archived && !search.SortDescending ? "desc" : "asc"))">
+                        Archive &#x296E;
+                    </a>
                 </th>
             </tr>
             </thead>
             <tbody id="bookstore-table-body">
                 @foreach (var bookmark in searchResult.Results)
                 {
+                    var bookmarkFolders = bookmark.Folder?.ToArray() ?? new Folder[] {};
                     <tr>
                         <td class="text-center align-middle">
                             <input type="checkbox" class="form-check mx-auto" style="height: 1.5em; width: 1.5em;" name="selected" value="@bookmark.Id" id="@bookmark.Id">
                         </td>
                         <td class="text-center align-middle">
-                            @{
-                                var bookmarkFolders = bookmark.Folder?.ToArray() ?? new Folder[] {};
-                            }
                             @if (bookmarkFolders.Length == 0)
                             {
-                                    <span>No Folder</span>
+                                <span>No Folder</span>
                             }
                             @foreach (var folder in bookmarkFolders)
                             {
@@ -113,7 +165,8 @@
                             }
                         </td>
                         <td class="text-center align-middle">
-                            @if (bookmark.Archive != null) {
+                            @if (bookmark.Archive != null) 
+                            {
                                 <a href="#">Archive Link</a>
                             }
                         </td>
@@ -121,6 +174,36 @@
                 }
             </tbody>
         </table>
+        
+        <div>
+            <nav class="text-center justify-content-around d-flex justify-content-between mx-auto w-100">
+                <ul class="pagination d-inline-flex">
+                    <li class="page-item @navDisableStart">
+                        <a class="page-link " asp-controller="Bookstore" asp-action="Index" asp-route-search="@search.QueryString" asp-route-page="@Math.Max(pageNumber - 1, 1)">Previous</a>
+                    </li>
+                </ul>
+                <ul class="pagination d-inline-flex w-100 justify-content-center">
+                    <li class="page-item @navDisableStart">
+                        <a class="page-link" asp-controller="Bookstore" asp-action="Index" asp-route-search="@search.QueryString" asp-route-page="page">&laquo;</a>
+                    </li>
+                    @for (int pn = Math.Max(1, pageNumber - 5); pn <= Math.Min(pageNumber + 5, maxPageNumber); pn++)
+                    {
+                        <li class="page-item @(pageNumber == pn ? "active" : "")">
+                            <a class="page-link" asp-controller="Bookstore" asp-action="Index" asp-route-search="@search.QueryString" asp-route-page="@pn">@pn</a>
+                        </li>
+                    }
+                    <li class="page-item @navDisableEnd">
+                        <a class="page-link" asp-controller="Bookstore" asp-action="Index" asp-route-search="@search.QueryString" asp-route-page="@maxPageNumber">&raquo;</a>
+                    </li>
+                </ul>
+                <ul class="pagination d-inline-flex">
+                    <li class="page-item @navDisableEnd">
+                        <a class="page-link" asp-controller="Bookstore" asp-action="Index" asp-route-search="@search.QueryString" asp-route-page="@Math.Min(pageNumber + 1, maxPageNumber)">Next</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        
     </form>
 
 </div>

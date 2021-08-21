@@ -10,6 +10,16 @@ namespace Bookstore.Models
         public ulong UserId { get; set; }
         public bool ArchiveByDefault { get; set; }
         public string DefaultQuery { get; set; }
-        public uint DefaultPaginationLimit { get; set; }
+        public int DefaultPaginationLimit { get; set; }
+
+        public static Settings CreateDefault()
+        {
+            return new Settings()
+            {
+                ArchiveByDefault = false,
+                DefaultQuery = "",
+                DefaultPaginationLimit = 100
+            };
+        }
     }
 }

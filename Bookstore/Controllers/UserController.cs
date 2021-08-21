@@ -17,6 +17,18 @@ namespace Bookstore.Controllers
         Netscape,
         CSV
     }
+
+    public class SettingsDto
+    {
+        [FromForm(Name = "default-query")]
+        public string DefaultQuery { get; set; }
+
+        [FromForm(Name = "default-max-results")]
+        public int DefaultMaxResults { get; set; }
+
+        [FromForm(Name = "archive-by-default")]
+        public bool ArchiveByDefault { get; set; }
+    }
     
     [Authorize(Policy = "MemberOnly")]
     public class UserController : Controller
@@ -36,9 +48,31 @@ namespace Bookstore.Controllers
             return View();
         }
         
+        [HttpGet]
         public IActionResult Settings()
         {
+            ViewData["Settings"] = _bookstore.GetUserSettings() ?? new Settings();
             return View();
+        }
+        
+        [HttpPost]
+        public IActionResult Settings(SettingsDto settingsDto)
+        {
+            User user = _context.Users
+                .Include(u => u.Settings)
+                .First(u => u.Id == _bookstore.User.Id);
+            
+            user.Settings = new Settings()
+            {
+                DefaultQuery = settingsDto.DefaultQuery,
+                UserId = _bookstore.User.Id,
+                ArchiveByDefault = settingsDto.ArchiveByDefault,
+                DefaultPaginationLimit = Math.Min(1000, Math.Max(1, settingsDto.DefaultMaxResults))
+            };
+            
+            _context.Update(user);
+            _context.SaveChanges();
+            return Settings();
         }
 
         private void ImportNetscapeBookmarks(Stream stream)

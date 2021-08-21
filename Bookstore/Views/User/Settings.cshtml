@@ -1,28 +1,42 @@
 @using Bookstore.Controllers
 @{
     ViewData["Title"] = "Account Settings";
+    Settings settings = (ViewData["Settings"] as Settings)!;
 }
 
 <div class="m-3">
     <h1>Settings</h1>
     
-    <form class="d-block w-50">
-        
+    <form class="d-block w-50" asp-controller="User" asp-action="Settings" method="POST">
         <div class="form-group">
             <label for="archive-by-default" class="m-0">
-                <input name="archive-by-default" id="archive-by-default" type="checkbox" class="form-control d-inline-block w-auto h-auto">
+                <input
+                    name="archive-by-default"
+                    id="archive-by-default"
+                    type="checkbox"
+                    class="form-control d-inline-block w-auto h-auto"
+                    value="true"
+                    @(settings.ArchiveByDefault ? "checked" : "")>
                 Archive New Bookmarks by Default
             </label>
         </div>
 
         <div class="form-group">
             <label for="default-query">Home Page Default Query</label>
-            <input name="default-query" id="default-query" type="text" class="form-control">
+            <input name="default-query"
+                   id="default-query"
+                   type="text"
+                   class="form-control"
+                   value="@settings.DefaultQuery">
         </div>
         
         <div class="form-group">
             <label for="default-max-results">Default Number of Max Results</label>
-            <input name="default-max-results" id="default-max-results" type="number" class="form-control">
+            <input name="default-max-results"
+                   id="default-max-results"
+                   type="number"
+                   class="form-control"
+                   value="@settings.DefaultPaginationLimit">
         </div>
         
         <div class="form-group">
