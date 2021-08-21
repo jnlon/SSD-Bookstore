@@ -11,7 +11,7 @@ namespace Bookstore.Migrations
                 name: "Archive",
                 columns: table => new
                 {
-                    Id = table.Column<ulong>(type: "INTEGER", nullable: false)
+                    Id = table.Column<long>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     PlainText = table.Column<string>(type: "TEXT", nullable: false),
                     Created = table.Column<DateTime>(type: "TEXT", nullable: false)
@@ -25,11 +25,11 @@ namespace Bookstore.Migrations
                 name: "Folders",
                 columns: table => new
                 {
-                    Id = table.Column<ulong>(type: "INTEGER", nullable: false)
+                    Id = table.Column<long>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    UserId = table.Column<ulong>(type: "INTEGER", nullable: false),
+                    UserId = table.Column<long>(type: "INTEGER", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
-                    ParentId = table.Column<ulong>(type: "INTEGER", nullable: true)
+                    ParentId = table.Column<long>(type: "INTEGER", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -46,10 +46,10 @@ namespace Bookstore.Migrations
                 name: "Tags",
                 columns: table => new
                 {
-                    Id = table.Column<ulong>(type: "INTEGER", nullable: false)
+                    Id = table.Column<long>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
-                    UserId = table.Column<ulong>(type: "INTEGER", nullable: false)
+                    UserId = table.Column<long>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -60,7 +60,7 @@ namespace Bookstore.Migrations
                 name: "Users",
                 columns: table => new
                 {
-                    Id = table.Column<ulong>(type: "INTEGER", nullable: false)
+                    Id = table.Column<long>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     Username = table.Column<string>(type: "TEXT", nullable: false),
                     Admin = table.Column<bool>(type: "INTEGER", nullable: false),
@@ -76,11 +76,11 @@ namespace Bookstore.Migrations
                 name: "Bookmarks",
                 columns: table => new
                 {
-                    Id = table.Column<ulong>(type: "INTEGER", nullable: false)
+                    Id = table.Column<long>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    ArchiveId = table.Column<ulong>(type: "INTEGER", nullable: true),
-                    UserId = table.Column<ulong>(type: "INTEGER", nullable: false),
-                    FolderId = table.Column<ulong>(type: "INTEGER", nullable: true),
+                    ArchiveId = table.Column<long>(type: "INTEGER", nullable: true),
+                    UserId = table.Column<long>(type: "INTEGER", nullable: false),
+                    FolderId = table.Column<long>(type: "INTEGER", nullable: true),
                     Created = table.Column<DateTime>(type: "TEXT", nullable: false),
                     Modified = table.Column<DateTime>(type: "TEXT", nullable: false),
                     Url = table.Column<string>(type: "TEXT", nullable: false),
@@ -115,10 +115,10 @@ namespace Bookstore.Migrations
                 name: "Settings",
                 columns: table => new
                 {
-                    UserId = table.Column<ulong>(type: "INTEGER", nullable: false),
+                    UserId = table.Column<long>(type: "INTEGER", nullable: false),
                     ArchiveByDefault = table.Column<bool>(type: "INTEGER", nullable: false),
                     DefaultQuery = table.Column<string>(type: "TEXT", nullable: false),
-                    DefaultPaginationLimit = table.Column<uint>(type: "INTEGER", nullable: false)
+                    DefaultPaginationLimit = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -135,8 +135,8 @@ namespace Bookstore.Migrations
                 name: "BookmarkTag",
                 columns: table => new
                 {
-                    BookmarksId = table.Column<ulong>(type: "INTEGER", nullable: false),
-                    TagsId = table.Column<ulong>(type: "INTEGER", nullable: false)
+                    BookmarksId = table.Column<long>(type: "INTEGER", nullable: false),
+                    TagsId = table.Column<long>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -158,27 +158,27 @@ namespace Bookstore.Migrations
             migrationBuilder.InsertData(
                 table: "Folders",
                 columns: new[] { "Id", "Name", "ParentId", "UserId" },
-                values: new object[] { 1ul, "Bun", null, 1ul });
+                values: new object[] { 1L, "Bun", null, 1L });
 
             migrationBuilder.InsertData(
                 table: "Folders",
                 columns: new[] { "Id", "Name", "ParentId", "UserId" },
-                values: new object[] { 4ul, "Other Bookmarks", null, 1ul });
+                values: new object[] { 4L, "Other Bookmarks", null, 1L });
 
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "Id", "Admin", "PasswordHash", "PasswordSalt", "Username" },
-                values: new object[] { 1ul, false, "futKLT7XXQbwt3PN/cYQhmmo6CgEmhwSxCPynoEUG+8=", "wHVCw8mkEY6KV82jwasbPg==", "toast" });
+                values: new object[] { 1L, false, "0CNgtKQEnxqgLpMPYKlq+2c1+Y9rc72EUtX4ZE2EKic=", "4h9MVW4JezQ1emYrfKy5lA==", "toast" });
 
             migrationBuilder.InsertData(
                 table: "Folders",
                 columns: new[] { "Id", "Name", "ParentId", "UserId" },
-                values: new object[] { 2ul, "Cheese", 1ul, 1ul });
+                values: new object[] { 2L, "Cheese", 1L, 1L });
 
             migrationBuilder.InsertData(
                 table: "Folders",
                 columns: new[] { "Id", "Name", "ParentId", "UserId" },
-                values: new object[] { 3ul, "Meat", 2ul, 1ul });
+                values: new object[] { 3L, "Meat", 2L, 1L });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Bookmarks_ArchiveId",

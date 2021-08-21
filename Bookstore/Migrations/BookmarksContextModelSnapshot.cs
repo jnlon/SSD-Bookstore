@@ -18,10 +18,10 @@ namespace Bookstore.Migrations
 
             modelBuilder.Entity("BookmarkTag", b =>
                 {
-                    b.Property<ulong>("BookmarksId")
+                    b.Property<long>("BookmarksId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<ulong>("TagsId")
+                    b.Property<long>("TagsId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("BookmarksId", "TagsId");
@@ -33,7 +33,7 @@ namespace Bookstore.Migrations
 
             modelBuilder.Entity("Bookstore.Models.Archive", b =>
                 {
-                    b.Property<ulong>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
@@ -51,11 +51,11 @@ namespace Bookstore.Migrations
 
             modelBuilder.Entity("Bookstore.Models.Bookmark", b =>
                 {
-                    b.Property<ulong>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<ulong?>("ArchiveId")
+                    b.Property<long?>("ArchiveId")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("Created")
@@ -67,7 +67,7 @@ namespace Bookstore.Migrations
                     b.Property<string>("FaviconMime")
                         .HasColumnType("TEXT");
 
-                    b.Property<ulong?>("FolderId")
+                    b.Property<long?>("FolderId")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("Modified")
@@ -81,7 +81,7 @@ namespace Bookstore.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<ulong>("UserId")
+                    b.Property<long>("UserId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
@@ -97,7 +97,7 @@ namespace Bookstore.Migrations
 
             modelBuilder.Entity("Bookstore.Models.Folder", b =>
                 {
-                    b.Property<ulong>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
@@ -105,10 +105,10 @@ namespace Bookstore.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<ulong?>("ParentId")
+                    b.Property<long?>("ParentId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<ulong>("UserId")
+                    b.Property<long>("UserId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
@@ -120,41 +120,41 @@ namespace Bookstore.Migrations
                     b.HasData(
                         new
                         {
-                            Id = 1ul,
+                            Id = 1L,
                             Name = "Bun",
-                            UserId = 1ul
+                            UserId = 1L
                         },
                         new
                         {
-                            Id = 2ul,
+                            Id = 2L,
                             Name = "Cheese",
-                            ParentId = 1ul,
-                            UserId = 1ul
+                            ParentId = 1L,
+                            UserId = 1L
                         },
                         new
                         {
-                            Id = 3ul,
+                            Id = 3L,
                             Name = "Meat",
-                            ParentId = 2ul,
-                            UserId = 1ul
+                            ParentId = 2L,
+                            UserId = 1L
                         },
                         new
                         {
-                            Id = 4ul,
+                            Id = 4L,
                             Name = "Other Bookmarks",
-                            UserId = 1ul
+                            UserId = 1L
                         });
                 });
 
             modelBuilder.Entity("Bookstore.Models.Settings", b =>
                 {
-                    b.Property<ulong>("UserId")
+                    b.Property<long>("UserId")
                         .HasColumnType("INTEGER");
 
                     b.Property<bool>("ArchiveByDefault")
                         .HasColumnType("INTEGER");
 
-                    b.Property<uint>("DefaultPaginationLimit")
+                    b.Property<int>("DefaultPaginationLimit")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("DefaultQuery")
@@ -168,7 +168,7 @@ namespace Bookstore.Migrations
 
             modelBuilder.Entity("Bookstore.Models.Tag", b =>
                 {
-                    b.Property<ulong>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
@@ -176,7 +176,7 @@ namespace Bookstore.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<ulong>("UserId")
+                    b.Property<long>("UserId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
@@ -186,7 +186,7 @@ namespace Bookstore.Migrations
 
             modelBuilder.Entity("Bookstore.Models.User", b =>
                 {
-                    b.Property<ulong>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
@@ -215,10 +215,10 @@ namespace Bookstore.Migrations
                     b.HasData(
                         new
                         {
-                            Id = 1ul,
+                            Id = 1L,
                             Admin = false,
-                            PasswordHash = "futKLT7XXQbwt3PN/cYQhmmo6CgEmhwSxCPynoEUG+8=",
-                            PasswordSalt = "wHVCw8mkEY6KV82jwasbPg==",
+                            PasswordHash = "0CNgtKQEnxqgLpMPYKlq+2c1+Y9rc72EUtX4ZE2EKic=",
+                            PasswordSalt = "4h9MVW4JezQ1emYrfKy5lA==",
                             Username = "toast"
                         });
                 });

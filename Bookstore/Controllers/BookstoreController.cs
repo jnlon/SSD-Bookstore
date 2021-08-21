@@ -35,11 +35,11 @@ namespace Bookstore.Controllers
         {
             page = Math.Max(1, page);
             Settings settings =_bookstore.GetUserSettings();
-            if (HttpContext.Request.Query.Keys.Count == 0 && settings?.DefaultQuery != null)
-            {
-                var qparams = new RouteValueDictionary() { { "search", settings?.DefaultQuery } };
-                return RedirectToAction(nameof(Index), "Bookstore", qparams);
-            }
+            // if (HttpContext.Request.Query.Keys.Count == 0 && settings?.DefaultQuery != null)
+            // {
+            //     var qparams = new RouteValueDictionary() { { "search", settings?.DefaultQuery } };
+            //     return RedirectToAction(nameof(Index), "Bookstore", qparams);
+            // }
             SearchQueryResult searchQuery = new(new SearchQuery(search), page, settings.DefaultPaginationLimit);
             searchQuery.Execute(_bookstore);
             
@@ -55,7 +55,7 @@ namespace Bookstore.Controllers
         }
         
         [HttpPost]
-        public IActionResult Index(string action, ulong[] selected)
+        public IActionResult Index(string action, long[] selected)
         {
             if (action == "Edit")
             {
@@ -64,15 +64,20 @@ namespace Bookstore.Controllers
 
             if (action == "Delete")
             {
-                var bookmarksToDelete = _bookstore
-                    .QueryAllUserBookmarks()
-                    .ToList()
-                    .Where(bm => selected.Contains(bm.Id))
-                    .ToList();
-                
+                var bookmarksToDelete = _bookstore.QueryUserBookmarksByIds(selected);
                 _context.Bookmarks.RemoveRange(bookmarksToDelete);
                 _bookstore.RefreshTagsAndFolders();
                 
+                _context.SaveChanges();
+                return Index(null);
+            }
+
+            if (action == "Archive")
+            {
+                var bookmarksToArchive = _bookstore.QueryUserBookmarksByIds(selected);
+                var archiver = new BookmarkArchiver(_bookstore);
+                archiver.ArchiveAll(bookmarksToArchive);
+
                 _context.SaveChanges();
                 return Index(null);
             }

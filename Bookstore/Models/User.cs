@@ -4,7 +4,7 @@ namespace Bookstore.Models
 {
     public class User
     {
-        public ulong Id { get; set; }
+        public long Id { get; set; }
         public string Username { get; set; }
         public bool Admin { get; set; }
         public Settings Settings { get; set; }

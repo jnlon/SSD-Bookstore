@@ -5,11 +5,11 @@ namespace Bookstore.Models
 {
     public class Folder
     {
-        public ulong Id { get; set; }
-        public ulong UserId { get; set; }
+        public long Id { get; set; }
+        public long UserId { get; set; }
         public string Name { get; set; }
         public Folder? Parent { get; set; } // When parent is null, this folder exists at the root
-        public ulong? ParentId { get; set; }
+        public long? ParentId { get; set; }
         public List<Bookmark> Bookmarks { get; set; }
 
         private static Folder[] ToArray(Folder folder)

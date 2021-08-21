@@ -19,15 +19,15 @@ namespace Bookstore.Controllers.Helpers
             _context = context;
         }
 
-        public Folder? GetFolder(ulong folderId)
+        public Folder? GetFolder(long folderId)
         {
             return _folders.FirstOrDefault(f => f.Id == folderId);   
         } 
         
         // A valid folder is null or exists for this user
-        public bool ValidFolder(ulong? folderId)
+        public bool ValidFolder(long? folderId)
         {
-            return folderId == null || GetFolder((ulong) folderId) != null;   
+            return folderId == null || GetFolder((long) folderId) != null;   
         } 
         
         public Folder CreateFolder(string name, Folder? parent)

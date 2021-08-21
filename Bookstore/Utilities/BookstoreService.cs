@@ -19,7 +19,7 @@ namespace Bookstore.Utilities
             var maybeValue = user.FindFirst(Claims.UserId)?.Value;
             if (maybeValue is null)
                 return null;
-            ulong value = ulong.Parse(maybeValue);
+            long value = long.Parse(maybeValue);
             return _context.Users.First(u => u.Id == value);
         }
         
@@ -38,8 +38,13 @@ namespace Bookstore.Utilities
                 .Include(bm => bm.User)
                 .Where(bm => bm.UserId == _user.Id);
         }
+        
+        public IQueryable<Bookmark> QueryUserBookmarksByIds(long[] ids)
+        {
+            return QueryAllUserBookmarks().Where(bm => ids.Contains(bm.Id));
+        }
 
-        public Bookmark? QuerySingleBookmarkById(ulong id)
+        public Bookmark? QuerySingleBookmarkById(long id)
         {
             return _context.Bookmarks
                 .Include(bm => bm.Tags)

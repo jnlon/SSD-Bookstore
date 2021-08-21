@@ -8,7 +8,7 @@ namespace Bookstore.Controllers.Helpers
 {
     internal class TagHelper
     {
-        private ulong _userId;
+        private long _userId;
         private HashSet<Tag> _userTags;
         private BookmarksContext _context;
         

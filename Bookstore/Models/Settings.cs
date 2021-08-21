@@ -7,7 +7,7 @@ namespace Bookstore.Models
     public class Settings
     {
         [Key, ForeignKey("User")]
-        public ulong UserId { get; set; }
+        public long UserId { get; set; }
         public bool ArchiveByDefault { get; set; }
         public string DefaultQuery { get; set; }
         public int DefaultPaginationLimit { get; set; }

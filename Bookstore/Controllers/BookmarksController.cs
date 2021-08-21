@@ -33,7 +33,7 @@ namespace Bookstore.Controllers
         }
 
         [HttpGet]
-        public FileContentResult Favicon(ulong id)
+        public FileContentResult Favicon(long id)
         {
             // User user = _context.GetUser(User).Include(u => u.Bookmarks).First();
             // Bookmark bookmark = user.Bookmarks.Single(bm => bm.Id == id);
@@ -78,7 +78,7 @@ namespace Bookstore.Controllers
                 .OrderByDescending(b => b.Id)
                 .First();
 
-            return RedirectToAction(nameof(Edit), "Bookmarks", new { id = bookmark.Id });
+            return RedirectToAction(nameof(Edit), "Bookmarks", new { ids = new long[]{bookmark.Id} });
         }
         
         [HttpPost]
@@ -88,18 +88,9 @@ namespace Bookstore.Controllers
         }
         
         [HttpGet]
-        public IActionResult Edit(ulong[] ids)
+        public IActionResult Edit(long[] ids)
         {
-            List<Bookmark?> bookmarks = new();
-            foreach (var id in ids)
-            {
-                var bookmark = _bookstore.QuerySingleBookmarkById(id);
-                
-                if (bookmark == null)
-                    return View("Error", new ErrorViewModel($"Unable to find bookmark with ID = {id}", nameof(BookmarksController), nameof(Edit)));
-                else
-                    bookmarks.Add(bookmark);
-            }
+            var bookmarks = _bookstore.QueryUserBookmarksByIds(ids).ToList();
 
             ViewData["Folders"] = _bookstore.QueryAllUserFolders()
                 .ToList()
@@ -115,11 +106,11 @@ namespace Bookstore.Controllers
             public Uri Url { get; set; }
             public string Title { get; set; }
             public string? Tags { get; set; }
-            public ulong? Folder { get; set; }
+            public long? Folder { get; set; }
             public string? NewFolder { get; set; } // Only if user chooses to create a new folder
         }
         
-        private void EditBookmark(ulong id, BookmarkEditDto upload, TagHelper th, Folder? folder, bool singleEdit)
+        private void EditBookmark(long id, BookmarkEditDto upload, TagHelper th, Folder? folder, bool singleEdit)
         {
             Bookmark? bookmark = _bookstore.QuerySingleBookmarkById(id); // .First(b => b.Id == id);
 
@@ -144,7 +135,7 @@ namespace Bookstore.Controllers
         }
 
         [HttpPost]
-        public IActionResult Edit([FromForm] ulong[] id, [FromForm] BookmarkEditDto upload)
+        public IActionResult Edit([FromForm] long[] id, [FromForm] BookmarkEditDto upload)
         {
             bool singleEdit = id.Length == 1;
             try
@@ -159,7 +150,7 @@ namespace Bookstore.Controllers
                 Folder? folder = null;
                 if (upload.Folder.HasValue)
                 {
-                    folder = fh.GetFolder((ulong)upload.Folder);
+                    folder = fh.GetFolder((long)upload.Folder);
                 }
                 
                 // If a "new folder" string was given, treat the "Folder" drop-down selected item as the parent
@@ -169,7 +160,7 @@ namespace Bookstore.Controllers
                     folder = fh.CreateFolder(upload.NewFolder, parent);
                 }
                 
-                foreach (ulong bookmarkId in id)
+                foreach (long bookmarkId in id)
                 {
                     EditBookmark(bookmarkId, upload, th, folder, singleEdit);
                 }
