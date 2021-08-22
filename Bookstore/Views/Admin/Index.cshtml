@@ -1,5 +1,9 @@
+@using Bookstore.Utilities
 @{
     ViewData["Title"] = "Admin Home";
+    AdminStatistics adminStats = (ViewData["AdminStatistics"] as AdminStatistics)!;
+    List<UserStatistics> userStats = (ViewData["UserStatistics"] as List<UserStatistics>)!;
+    User currentUser = (ViewData["CurrentUser"] as User)!;
 }
 
 <div class="m-3">
@@ -8,48 +12,57 @@
         <table class="w-50">
             <tbody>
             <tr>
-                <th>Number of users</th>
-                <td>XXX</td>
+                <th>Number of Users</th>
+                <td>@adminStats.NumberOfUsers</td>
             </tr>
             <tr>
                 <th>Total Number of Bookmarks</th>
-                <td>XXX</td>
+                <td>@adminStats.TotalNumberOfBookmarks</td>
             </tr>
             <tr>
                 <th>Number of Archived Bookmarks</th>
-                <td>XXX</td>
+                <td>@adminStats.TotalNumberOfArchivedBookmarks</td>
             </tr>
             <tr>
                 <th>Archived Website Disk Usage / Total Space</th>
-                <td>XXXMb / XXXMb</td>
+                <td>@(adminStats.ArchivedDiskUsageBytes / 1000 / 1000) Mb / @(adminStats.TotalSpaceOnDisk / 1000 / 1000) Mb</td>
             </tr>
             </tbody>
         </table>
     </div>
     
     <div>
-        <h1>Users</h1>
+        <div class="d-flex justify-content-between align-items-center">
+            <h1>Users</h1>
+            <a class="btn btn-primary" asp-controller="Admin" asp-action="Create" role="button">Add New User</a>
+        </div>
         <table class="table table-sm">
             <thead>
             <tr>
                 <th>Actions</th>
-                <th>Email</th>
+                <th>Username</th>
                 <th>Number of Bookmarks</th>
                 <th>Number of Archived Bookmarks</th>
                 <th>Archived Bookmark Disk Usage</th>
             </tr>
             </thead>
             <tbody>
+            @foreach (var stats in userStats)
+            {
             <tr>
                 <td>
-                    <a href="#">Delete</a>
-                    <a href="#">Edit</a>
+                    <a asp-action="Edit" asp-route-id="@stats.User.Id">Edit</a>
+                    @if (currentUser.Id != stats.User.Id)
+                    {
+                        <a asp-action="Delete" asp-route-id="@stats.User.Id">Delete</a>
+                    }
                 </td>
-                <td> XXX@XXX </td>
-                <td> X </td>
-                <td> X </td>
-                <td> XMb </td>
+                <td> @stats.User.Username </td>
+                <td> @stats.NumberOfBookmarks </td>
+                <td> @stats.NumberOfArchivedBookmarks </td>
+                <td> @(stats.ArchivedBookmarkDiskUsage / 1000 / 1000) Mb </td>
             </tr>
+            }
             </tbody>
         </table>
     </div>

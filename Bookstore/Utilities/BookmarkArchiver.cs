@@ -138,6 +138,7 @@ namespace Bookstore.Utilities
             
             bookmark.Archive = new Archive
             {
+                UserId = bookmark.UserId,
                 Created = DateTime.Now,
                 Bytes = raw,
                 PlainText = plainText,

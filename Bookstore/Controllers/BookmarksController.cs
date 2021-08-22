@@ -188,7 +188,7 @@ namespace Bookstore.Controllers
                 return View("Error", new ErrorViewModel(e.Message, nameof(BookmarksController), nameof(Edit)) );
             }
             
-            _bookstore.RefreshTagsAndFolders();
+            _bookstore.CleanupBookmarkOrphans();
             _context.SaveChanges();
             return RedirectToAction(nameof(Index), "Bookstore");
         }

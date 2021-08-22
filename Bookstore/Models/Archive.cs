@@ -7,6 +7,7 @@ namespace Bookstore.Models
     {
         [ForeignKey("Bookmark")]
         public long Id { get; set; }
+        public long UserId { get; set; }
         public string? PlainText { get; set; }
         public byte[]? Formatted { get; set; }
         public byte[] Bytes { get; set; }

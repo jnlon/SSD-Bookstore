@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using Bookstore.Constants.Authorization;
@@ -13,6 +14,8 @@ namespace Bookstore.Utilities
         private BookmarksContext _context;
         private User? _user;
         public User User => _user!;
+        
+        private bool IsAdmin => _user?.Admin ?? false;
         
         private User GetUserFromClaims(ClaimsPrincipal user)
         {
@@ -81,9 +84,88 @@ namespace Bookstore.Utilities
 
             return settings ?? Settings.CreateDefault();
         }
+        
+        private long ByteCountOfArchive(Archive? archive)
+        {
+            if (archive == null)
+                return 0;
+            
+            long sum = archive.Bytes.Length;
+            
+            if (archive.Formatted != null)
+                sum += archive.Formatted.Length;
+            
+            if (archive.PlainText != null)
+                sum += archive.PlainText.Length;
+
+            return sum;
+        }
+        
+        public void DeleteUserById(long id)
+        {
+            if (!IsAdmin)
+                throw new UnauthorizedAccessException("User must be an administrator to access this resource");
+
+            var user = _context.Users
+                .Include(u => u.Settings)
+                .Include(u => u.Bookmarks).ThenInclude(bm => bm.Archive)
+                .Include(u => u.Bookmarks).ThenInclude(bm => bm.Folder).ThenInclude(f => f!.Parent)
+                .Include(u => u.Bookmarks).ThenInclude(bm => bm.Tags)
+                .First(u => u.Id == id);
+
+            _context.Bookmarks.RemoveRange(user.Bookmarks);
+            _context.Users.Remove(user);
+        }
+
+
+        public List<UserStatistics> GetUserStatistics()
+        {
+            if (!IsAdmin)
+                throw new UnauthorizedAccessException("User must be an administrator to access this resource");
+
+            UserStatistics StatsFromUser(User u)
+            {
+                //var bookmarks = _context.Bookmarks.Include(bm => bm.Archive).Where();
+
+                IQueryable<Bookmark> UserBookmarks() => _context.Bookmarks
+                    .Where(bm => bm.UserId == u.Id);
+
+                IQueryable<Archive> UserArchives() => _context.Archives
+                    .Where(ar => ar.UserId == u.Id);
+
+                var nob = UserBookmarks().Count();
+                var abdu = UserArchives().Sum(ByteCountOfArchive);
+                var noab = UserArchives().Count();
+
+                return new UserStatistics
+                {
+                    User = u,
+                    NumberOfBookmarks = nob,
+                    ArchivedBookmarkDiskUsage = abdu,
+                    NumberOfArchivedBookmarks = noab
+                };
+            }
+            
+            return _context.Users.ToList().Select(StatsFromUser).ToList();
+        }
+
+        public AdminStatistics GetAdminStatistics()
+        {
+            if (!IsAdmin)
+                throw new UnauthorizedAccessException("User must be an administrator to access this resource");
+
+            return new AdminStatistics
+            {
+                NumberOfUsers = _context.Users.Count(),
+                ArchivedDiskUsageBytes = _context.Archives.Sum(ByteCountOfArchive),
+                TotalNumberOfBookmarks = _context.Bookmarks.Count(),
+                TotalNumberOfArchivedBookmarks = _context.Archives.Count(),
+                TotalSpaceOnDisk = new DriveInfo(Directory.GetDirectoryRoot(Environment.CurrentDirectory)).TotalSize
+            };
+        }
 
         // Remove 
-        public void RefreshTagsAndFolders()
+        public void CleanupBookmarkOrphans()
         {
             var bookmarksToDelete = _context.ChangeTracker
                 .Entries<Bookmark>()
@@ -109,7 +191,18 @@ namespace Bookstore.Utilities
                        allFolders.Where(f => f.ParentId == folder.Id).All(CanDeleteFolder);
             }
             
-            var foldersToDelete = allFolders.Where(CanDeleteFolder).ToList();
+            var archivesIdsToDelete = bookmarksToDelete
+                .Where(bm => bm.ArchiveId != null)
+                .Select(bm => bm.ArchiveId)
+                .ToList();
+
+            var archivesToDelete = _context.Archives
+                .Where(ar => archivesIdsToDelete.Contains(ar.Id));
+
+            var foldersToDelete = allFolders
+                .Where(CanDeleteFolder)
+                .ToList();
+            
             var tagsToDelete = QueryAllUserTags()
                 .Include(tag => tag.Bookmarks)
                 .ToList()
@@ -118,6 +211,7 @@ namespace Bookstore.Utilities
             
             _context.Folders.RemoveRange(foldersToDelete);
             _context.Tags.RemoveRange(tagsToDelete);
+            _context.Archives.RemoveRange(archivesToDelete);
         }
     }
 }

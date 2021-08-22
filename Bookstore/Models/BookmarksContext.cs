@@ -17,6 +17,7 @@ namespace Bookstore.Models
         public DbSet<Bookmark> Bookmarks { get; set; }
         public DbSet<Tag> Tags { get; set; }
         public DbSet<Folder> Folders { get; set; }
+        public DbSet<Archive> Archives { get; set; }
 
         public BookmarksContext(DbContextOptions<BookmarksContext> options) : base(options)
         {
@@ -42,7 +43,7 @@ namespace Bookstore.Models
             builder.Entity<User>()
                 .HasIndex(u => u.Username)
                 .IsUnique();
-            
+
             var env = this.GetService<IWebHostEnvironment>();
             if (env.IsDevelopment())
             {

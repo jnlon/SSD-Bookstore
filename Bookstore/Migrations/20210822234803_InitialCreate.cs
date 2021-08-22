@@ -8,11 +8,12 @@ namespace Bookstore.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Archive",
+                name: "Archives",
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
+                    UserId = table.Column<long>(type: "INTEGER", nullable: false),
                     PlainText = table.Column<string>(type: "TEXT", nullable: true),
                     Formatted = table.Column<byte[]>(type: "BLOB", nullable: true),
                     Bytes = table.Column<byte[]>(type: "BLOB", nullable: false),
@@ -21,7 +22,7 @@ namespace Bookstore.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Archive", x => x.Id);
+                    table.PrimaryKey("PK_Archives", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -95,9 +96,9 @@ namespace Bookstore.Migrations
                 {
                     table.PrimaryKey("PK_Bookmarks", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Bookmarks_Archive_ArchiveId",
+                        name: "FK_Bookmarks_Archives_ArchiveId",
                         column: x => x.ArchiveId,
-                        principalTable: "Archive",
+                        principalTable: "Archives",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
@@ -161,12 +162,12 @@ namespace Bookstore.Migrations
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "Id", "Admin", "PasswordHash", "PasswordSalt", "Username" },
-                values: new object[] { 1L, true, "0BGd4/dhnwylZKiDRFG4mkMdg6K5kMxIiXzAJAS7HIA=", "AvD+NMA54KIo+4bba9dy+A==", "admin" });
+                values: new object[] { 1L, true, "4cdlmylvrth3bUZzN9H9CoqksEX7cI3O6psaPO19hgY=", "O7luc9THuhvDLLHlh/0Wkw==", "admin" });
 
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "Id", "Admin", "PasswordHash", "PasswordSalt", "Username" },
-                values: new object[] { 2L, false, "0BGd4/dhnwylZKiDRFG4mkMdg6K5kMxIiXzAJAS7HIA=", "AvD+NMA54KIo+4bba9dy+A==", "toast" });
+                values: new object[] { 2L, false, "4cdlmylvrth3bUZzN9H9CoqksEX7cI3O6psaPO19hgY=", "O7luc9THuhvDLLHlh/0Wkw==", "toast" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Bookmarks_ArchiveId",
@@ -215,7 +216,7 @@ namespace Bookstore.Migrations
                 name: "Tags");
 
             migrationBuilder.DropTable(
-                name: "Archive");
+                name: "Archives");
 
             migrationBuilder.DropTable(
                 name: "Folders");

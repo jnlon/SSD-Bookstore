@@ -67,7 +67,7 @@ namespace Bookstore.Controllers
             {
                 var bookmarksToDelete = _bookstore.QueryUserBookmarksByIds(selected);
                 _context.Bookmarks.RemoveRange(bookmarksToDelete);
-                _bookstore.RefreshTagsAndFolders();
+                _bookstore.CleanupBookmarkOrphans();
                 _context.SaveChanges();
             }
             else if (action == "Archive")
