@@ -159,29 +159,14 @@ namespace Bookstore.Migrations
                 });
 
             migrationBuilder.InsertData(
-                table: "Folders",
-                columns: new[] { "Id", "Name", "ParentId", "UserId" },
-                values: new object[] { 1L, "Bun", null, 1L });
-
-            migrationBuilder.InsertData(
-                table: "Folders",
-                columns: new[] { "Id", "Name", "ParentId", "UserId" },
-                values: new object[] { 4L, "Other Bookmarks", null, 1L });
+                table: "Users",
+                columns: new[] { "Id", "Admin", "PasswordHash", "PasswordSalt", "Username" },
+                values: new object[] { 1L, true, "0BGd4/dhnwylZKiDRFG4mkMdg6K5kMxIiXzAJAS7HIA=", "AvD+NMA54KIo+4bba9dy+A==", "admin" });
 
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "Id", "Admin", "PasswordHash", "PasswordSalt", "Username" },
-                values: new object[] { 1L, false, "L1IbP95kNo9MPmvNR0MJkYDpWTjtrNjZa4ZFpLfp15E=", "d9b5WSAgMH+L8XWDhiixPg==", "toast" });
-
-            migrationBuilder.InsertData(
-                table: "Folders",
-                columns: new[] { "Id", "Name", "ParentId", "UserId" },
-                values: new object[] { 2L, "Cheese", 1L, 1L });
-
-            migrationBuilder.InsertData(
-                table: "Folders",
-                columns: new[] { "Id", "Name", "ParentId", "UserId" },
-                values: new object[] { 3L, "Meat", 2L, 1L });
+                values: new object[] { 2L, false, "0BGd4/dhnwylZKiDRFG4mkMdg6K5kMxIiXzAJAS7HIA=", "AvD+NMA54KIo+4bba9dy+A==", "toast" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Bookmarks_ArchiveId",

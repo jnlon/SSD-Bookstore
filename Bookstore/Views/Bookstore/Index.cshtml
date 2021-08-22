@@ -58,7 +58,7 @@
         </div>
         
         <div>
-            Showing @searchResult.QueriedBookmarks of @searchResult.TotalBookmarks bookmarks.
+            Showing @searchResult.QueriedBookmarks of @searchResult.TotalQueriedBookmarks bookmarks (@searchResult.TotalBookmarks total).
         </div>
         
         <div>
@@ -165,9 +165,9 @@
                             }
                         </td>
                         <td class="text-center align-middle">
-                            @if (bookmark.Archive != null) 
+                            @if (bookmark.ArchiveId != null) 
                             {
-                                <a asp-controller="Bookmarks" asp-action="Archive" asp-route-id="@bookmark.Id">Archive Link</a>
+                                <a asp-controller="Bookmarks" asp-action="Archive" asp-route-id="@bookmark.Id">View</a>
                             }
                         </td>
                     </tr>

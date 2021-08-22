@@ -7,6 +7,7 @@ namespace Bookstore.Models
     public class Bookmark
     {
         public long Id { get; set; }
+        public long? ArchiveId { get; set; }
         public Archive? Archive { get; set; }
         public long UserId { get; set; }
         public User User { get; set; }

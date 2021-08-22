@@ -34,7 +34,6 @@ namespace Bookstore.Utilities
             return _context.Bookmarks
                 .Include(bm => bm.Folder)
                 .Include(bm => bm.Tags)
-                .Include(bm => bm.Archive)
                 .Include(bm => bm.User)
                 .Where(bm => bm.UserId == _user.Id);
         }
@@ -44,13 +43,21 @@ namespace Bookstore.Utilities
             return QueryAllUserBookmarks().Where(bm => ids.Contains(bm.Id));
         }
 
-        public Bookmark? QuerySingleBookmarkById(long id)
+        public Bookmark? GetSingleBookmarkById(long id)
         {
             return _context.Bookmarks
                 .Include(bm => bm.Tags)
                 .Include(bm => bm.Folder)
+                .FirstOrDefault(bm => bm.Id == id && bm.UserId == _user.Id);
+        }
+
+        public Archive? GetArchiveByBookmarkId(long id)
+        {
+            var bookmark = _context.Bookmarks
                 .Include(bm => bm.Archive)
                 .FirstOrDefault(bm => bm.Id == id && bm.UserId == _user.Id);
+
+            return bookmark?.Archive;
         }
 
         public IQueryable<Tag> QueryAllUserTags()

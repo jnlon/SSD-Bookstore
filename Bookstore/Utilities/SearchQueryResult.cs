@@ -42,7 +42,7 @@ namespace Bookstore.Utilities
             };
 
             //List<Bookmark> allBookmarks = bookstore.QueryAllUserBookmarks().ToList();
-            var allBookmarks = bookstore.QueryAllUserBookmarks().ToList();
+            var allBookmarks = bookstore.QueryAllUserBookmarks();
             
             IEnumerable<Bookmark> query = allBookmarks.Where(Search.PassesAllFilters);
 

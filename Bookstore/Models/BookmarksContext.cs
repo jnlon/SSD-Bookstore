@@ -25,14 +25,16 @@ namespace Bookstore.Models
         private void InsertDevelopmentData(ModelBuilder builder)
         {
             var (passwordHash, passwordSalt) = Crypto.GeneratePasswordHash("123");
-            var user = new User() {Id = 1, Admin = false, Username = "toast", PasswordHash = passwordHash, PasswordSalt = passwordSalt};
+            var adminUser = new User() {Id = 1, Admin = true, Username = "admin", PasswordHash = passwordHash, PasswordSalt = passwordSalt};
+            var standardUser = new User() {Id = 2, Admin = false, Username = "toast", PasswordHash = passwordHash, PasswordSalt = passwordSalt};
             
-            builder.Entity<User>().HasData(user);
+            builder.Entity<User>().HasData(adminUser);
+            builder.Entity<User>().HasData(standardUser);
 
-            builder.Entity<Folder>().HasData(new Folder() { Id = 1, Name = "Bun", ParentId = null, UserId = user.Id });
-            builder.Entity<Folder>().HasData(new Folder() { Id = 2, Name = "Cheese", ParentId = 1, UserId = user.Id });
-            builder.Entity<Folder>().HasData(new Folder() { Id = 3, Name = "Meat", ParentId = 2, UserId = user.Id });
-            builder.Entity<Folder>().HasData(new Folder() { Id = 4, Name = "Other Bookmarks", ParentId = null, UserId = user.Id });
+            // builder.Entity<Folder>().HasData(new Folder() { Id = 1, Name = "Bun", ParentId = null, UserId = standardUser.Id });
+            // builder.Entity<Folder>().HasData(new Folder() { Id = 2, Name = "Cheese", ParentId = 1, UserId = standardUser.Id });
+            // builder.Entity<Folder>().HasData(new Folder() { Id = 3, Name = "Meat", ParentId = 2, UserId = standardUser.Id });
+            // builder.Entity<Folder>().HasData(new Folder() { Id = 4, Name = "Other Bookmarks", ParentId = null, UserId = standardUser.Id });
         }
 
         protected override void OnModelCreating(ModelBuilder builder)

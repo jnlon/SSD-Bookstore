@@ -38,7 +38,7 @@ namespace Bookstore.Controllers
             // User user = _context.GetUser(User).Include(u => u.Bookmarks).First();
             // Bookmark bookmark = user.Bookmarks.Single(bm => bm.Id == id);
 
-            Bookmark? bookmark = _bookstore.QuerySingleBookmarkById(id);
+            Bookmark? bookmark = _bookstore.GetSingleBookmarkById(id);
             byte[] icon = bookmark?.Favicon ?? new byte[]{};
             string iconMimeType = bookmark?.FaviconMime ?? "";
             var result = new FileContentResult(icon, iconMimeType);
@@ -112,7 +112,7 @@ namespace Bookstore.Controllers
         
         private void EditBookmark(long id, BookmarkEditDto upload, TagHelper th, Folder? folder, bool singleEdit)
         {
-            Bookmark? bookmark = _bookstore.QuerySingleBookmarkById(id); // .First(b => b.Id == id);
+            Bookmark? bookmark = _bookstore.GetSingleBookmarkById(id); // .First(b => b.Id == id);
 
             if (bookmark == null)
                 throw new ArgumentException($"Unable to find bookmark with ID = {id}");
@@ -137,10 +137,9 @@ namespace Bookstore.Controllers
         [HttpGet]
         public IActionResult Archive(long id)
         {
-            Bookmark? bookmark = _bookstore.QuerySingleBookmarkById(id);
-            Archive? archive = bookmark?.Archive;
+            Archive? archive = _bookstore.GetArchiveByBookmarkId(id);
 
-            if (bookmark == null || archive == null)
+            if (archive == null)
                 throw new ArgumentException($"Invalid bookmark ID: {id}");
             
             Response.Headers.Add("Cache-Control", "public, immutable");

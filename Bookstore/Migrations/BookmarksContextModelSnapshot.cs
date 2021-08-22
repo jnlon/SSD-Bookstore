@@ -126,34 +126,6 @@ namespace Bookstore.Migrations
                     b.HasIndex("ParentId");
 
                     b.ToTable("Folders");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1L,
-                            Name = "Bun",
-                            UserId = 1L
-                        },
-                        new
-                        {
-                            Id = 2L,
-                            Name = "Cheese",
-                            ParentId = 1L,
-                            UserId = 1L
-                        },
-                        new
-                        {
-                            Id = 3L,
-                            Name = "Meat",
-                            ParentId = 2L,
-                            UserId = 1L
-                        },
-                        new
-                        {
-                            Id = 4L,
-                            Name = "Other Bookmarks",
-                            UserId = 1L
-                        });
                 });
 
             modelBuilder.Entity("Bookstore.Models.Settings", b =>
@@ -226,9 +198,17 @@ namespace Bookstore.Migrations
                         new
                         {
                             Id = 1L,
+                            Admin = true,
+                            PasswordHash = "0BGd4/dhnwylZKiDRFG4mkMdg6K5kMxIiXzAJAS7HIA=",
+                            PasswordSalt = "AvD+NMA54KIo+4bba9dy+A==",
+                            Username = "admin"
+                        },
+                        new
+                        {
+                            Id = 2L,
                             Admin = false,
-                            PasswordHash = "L1IbP95kNo9MPmvNR0MJkYDpWTjtrNjZa4ZFpLfp15E=",
-                            PasswordSalt = "d9b5WSAgMH+L8XWDhiixPg==",
+                            PasswordHash = "0BGd4/dhnwylZKiDRFG4mkMdg6K5kMxIiXzAJAS7HIA=",
+                            PasswordSalt = "AvD+NMA54KIo+4bba9dy+A==",
                             Username = "toast"
                         });
                 });

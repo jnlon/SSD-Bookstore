@@ -41,50 +41,49 @@ namespace Bookstore.Controllers
             //     var qparams = new RouteValueDictionary() { { "search", settings?.DefaultQuery } };
             //     return RedirectToAction(nameof(Index), "Bookstore", qparams);
             // }
-            SearchQueryResult searchQuery = new(new SearchQuery(search), page, settings.DefaultPaginationLimit);
-            searchQuery.Execute(_bookstore);
+            SearchQuery searchQuery = new(search, _bookstore);
+            SearchQueryResult searchResult = new(searchQuery, page, settings.DefaultPaginationLimit);
+            searchResult.Execute(_bookstore);
             
-            ViewData["Search"] = searchQuery;
+            ViewData["Search"] = searchResult;
             ViewData["Settings"] = settings;
             ViewData["PageNumber"] = page;
             
-            int pageCount = searchQuery.TotalQueriedBookmarks / settings.DefaultPaginationLimit;
-            bool evenPageCount = searchQuery.TotalQueriedBookmarks % settings.DefaultPaginationLimit == 0;
+            int pageCount = searchResult.TotalQueriedBookmarks / settings.DefaultPaginationLimit;
+            bool evenPageCount = searchResult.TotalQueriedBookmarks % settings.DefaultPaginationLimit == 0;
             ViewData["MaxPageNumber"] = pageCount + (evenPageCount ? 0 : 1);
             
             return View();
         }
         
         [HttpPost]
-        public async Task<IActionResult> Index(string action, long[] selected)
+        public IActionResult Index(string action, long[] selected, string? search, int page = 1)
         {
             if (action == "Edit")
             {
                 return RedirectToAction("Edit", "Bookmarks",new RouteValueDictionary() {{"ids", selected}});
-            }
-
-            if (action == "Delete")
+            } 
+            else if (action == "Delete")
             {
                 var bookmarksToDelete = _bookstore.QueryUserBookmarksByIds(selected);
                 _context.Bookmarks.RemoveRange(bookmarksToDelete);
                 _bookstore.RefreshTagsAndFolders();
-                
                 _context.SaveChanges();
-                return Index(null);
             }
-
-            if (action == "Archive")
+            else if (action == "Archive")
             {
                 var bookmarksToArchive = _bookstore.QueryUserBookmarksByIds(selected);
                 var archiver = new BookmarkArchiver();
-                await archiver.ArchiveAll(bookmarksToArchive);
-
+                archiver.ArchiveAll(bookmarksToArchive);
                 _context.SaveChanges();
-                return Index(null);
             }
-
-            return View("Error", new ErrorViewModel($"Invalid Action: {action}", nameof(BookstoreController), nameof(Index)));
-            //return $"Action = {action}, selected = {string.Join(",", selected)}";
+            else
+            {
+                return View("Error", new ErrorViewModel($"Invalid Action: {action}", nameof(BookstoreController), nameof(Index)));
+            }
+            
+            var qparams = new RouteValueDictionary { { "search", search }, {"page", page} };
+            return RedirectToAction(nameof(Index), "Bookstore", qparams);
         }
         
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

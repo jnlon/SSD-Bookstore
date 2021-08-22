@@ -50,6 +50,8 @@ namespace Bookstore.Utilities
         public readonly bool SortDescending;
         public readonly bool? ArchivedFilter;
 
+        private BookstoreService _bookstoreService;
+
         // Note: The inner collection performs logical-AND filter, the outer-list is logical OR
         private readonly IReadOnlyList<SearchQueryFunction> _tagFilter;
         private readonly IReadOnlyList<SearchQueryFunction> _singleFolderFilter;
@@ -59,9 +61,11 @@ namespace Bookstore.Utilities
         private readonly IReadOnlyList<SearchQueryFunction> _titleFilter;
         private readonly IReadOnlyList<SearchQueryFunction> _generalFilter;
         
-        public SearchQuery(string? query)
+        public SearchQuery(string? query, BookstoreService service)
         {
             QueryString = query ?? string.Empty;;
+
+            _bookstoreService = service;
             
             _contentFilter = SearchQueryFunction.FromQuery(QueryString, "content");
             _singleFolderFilter = SearchQueryFunction.FromQuery(QueryString, "folder");
@@ -149,15 +153,15 @@ namespace Bookstore.Utilities
                   || GenericPassesFilter(PassesFolderFilterArgument, _generalFilter);
         }
         
-        private bool PassesArchiveFilter(Archive? archive)
+        private bool PassesArchiveFilter(long? archiveId)
         {
             if (ArchivedFilter == null)
                 return true;
 
-            if (archive is null && ArchivedFilter == false)
+            if (archiveId is null && ArchivedFilter == false)
                 return true;
 
-            if (archive is not null && ArchivedFilter == true)
+            if (archiveId is not null && ArchivedFilter == true)
                 return true;
 
             return false;
@@ -169,10 +173,19 @@ namespace Bookstore.Utilities
            return GenericPassesFilter(PassesTitleFilterArgument, _titleFilter);
         }
 
-        private bool PassesContentFilter(Archive? archive)
+        private bool PassesContentFilter(Bookmark bm)
         {
+            if (_contentFilter.Count == 0)
+                return true;
+            
             // If content filter is present, always exclude non-archived bookmarks
-            if (_contentFilter.Count > 0 && archive == null)
+            if (bm.ArchiveId == null)
+                return false;
+
+            Archive archive = _bookstoreService.GetArchiveByBookmarkId(bm.Id)!;
+
+            // If there is no plaintext to search, it has not passed the filter
+            if (archive.PlainText == null)
                 return false;
             
             bool PassesContentFilterArgument(string arg) => archive.PlainText.ToLower().Contains(arg.ToLower());
@@ -222,18 +235,17 @@ namespace Bookstore.Utilities
             return folderPasses;
         }
         
-
         public bool PassesAllFilters(Bookmark bm)
         {
             return
                 PassesGeneralFilter(bm)
-                && PassesArchiveFilter(bm.Archive)
+                && PassesArchiveFilter(bm.ArchiveId)
                 && PassesTitleFilter(bm.Title)
                 && PassesUrlFilter(bm.Url)
                 && PassesTagFilter(bm.Tags)
                 && PassesSingleFolderFilter(bm.Folder)
                 && PassesRecursiveFolderFilter(bm.Folder)
-                && PassesContentFilter(bm.Archive);
+                && PassesContentFilter(bm);
         }
 
         public override string ToString() => QueryString;
