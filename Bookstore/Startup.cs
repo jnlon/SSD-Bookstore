@@ -87,7 +87,7 @@ namespace Bookstore
             }
 
             app.UseHttpsRedirection();
-            //app.UseStaticFiles();
+            app.UseStaticFiles();
             
             app.UseRouting();
             app.UseAuthentication();
@@ -95,11 +95,12 @@ namespace Bookstore
             app.UseCookiePolicy(new CookiePolicyOptions() {MinimumSameSitePolicy = SameSiteMode.Strict});
             app.UseStatusCodePages();
             
-            app.UseStaticFiles(new StaticFileOptions
-            {
-                FileProvider = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "data/archive")),
-                RequestPath = "/archive-static"
-            });
+            // app.UseStaticFiles(new StaticFileOptions
+            // {
+            //     FileProvider = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "data/archive")),
+            //     RequestPath = "/archive-static",
+            //     ServeUnknownFileTypes = true
+            // });
             
             app.UseEndpoints(endpoints =>
             {

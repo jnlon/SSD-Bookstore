@@ -10,6 +10,7 @@ using Bookstore.Models.View;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Bookstore.Utilities;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Routing;
@@ -55,7 +56,7 @@ namespace Bookstore.Controllers
         }
         
         [HttpPost]
-        public IActionResult Index(string action, long[] selected)
+        public async Task<IActionResult> Index(string action, long[] selected)
         {
             if (action == "Edit")
             {
@@ -75,8 +76,8 @@ namespace Bookstore.Controllers
             if (action == "Archive")
             {
                 var bookmarksToArchive = _bookstore.QueryUserBookmarksByIds(selected);
-                var archiver = new BookmarkArchiver(_bookstore);
-                archiver.ArchiveAll(bookmarksToArchive);
+                var archiver = new BookmarkArchiver();
+                await archiver.ArchiveAll(bookmarksToArchive);
 
                 _context.SaveChanges();
                 return Index(null);

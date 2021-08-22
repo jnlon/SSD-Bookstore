@@ -167,7 +167,7 @@
                         <td class="text-center align-middle">
                             @if (bookmark.Archive != null) 
                             {
-                                <a href="#">Archive Link</a>
+                                <a asp-controller="Bookmarks" asp-action="Archive" asp-route-id="@bookmark.Id">Archive Link</a>
                             }
                         </td>
                     </tr>

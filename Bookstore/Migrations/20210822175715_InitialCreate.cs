@@ -13,7 +13,10 @@ namespace Bookstore.Migrations
                 {
                     Id = table.Column<long>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    PlainText = table.Column<string>(type: "TEXT", nullable: false),
+                    PlainText = table.Column<string>(type: "TEXT", nullable: true),
+                    Formatted = table.Column<byte[]>(type: "BLOB", nullable: true),
+                    Bytes = table.Column<byte[]>(type: "BLOB", nullable: false),
+                    Mime = table.Column<string>(type: "TEXT", nullable: false),
                     Created = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
@@ -168,7 +171,7 @@ namespace Bookstore.Migrations
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "Id", "Admin", "PasswordHash", "PasswordSalt", "Username" },
-                values: new object[] { 1L, false, "0CNgtKQEnxqgLpMPYKlq+2c1+Y9rc72EUtX4ZE2EKic=", "4h9MVW4JezQ1emYrfKy5lA==", "toast" });
+                values: new object[] { 1L, false, "L1IbP95kNo9MPmvNR0MJkYDpWTjtrNjZa4ZFpLfp15E=", "d9b5WSAgMH+L8XWDhiixPg==", "toast" });
 
             migrationBuilder.InsertData(
                 table: "Folders",

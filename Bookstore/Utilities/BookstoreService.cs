@@ -49,6 +49,7 @@ namespace Bookstore.Utilities
             return _context.Bookmarks
                 .Include(bm => bm.Tags)
                 .Include(bm => bm.Folder)
+                .Include(bm => bm.Archive)
                 .FirstOrDefault(bm => bm.Id == id && bm.UserId == _user.Id);
         }
 

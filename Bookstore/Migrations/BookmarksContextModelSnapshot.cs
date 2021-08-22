@@ -37,11 +37,21 @@ namespace Bookstore.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<byte[]>("Bytes")
+                        .IsRequired()
+                        .HasColumnType("BLOB");
+
                     b.Property<DateTime>("Created")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("PlainText")
+                    b.Property<byte[]>("Formatted")
+                        .HasColumnType("BLOB");
+
+                    b.Property<string>("Mime")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PlainText")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -217,8 +227,8 @@ namespace Bookstore.Migrations
                         {
                             Id = 1L,
                             Admin = false,
-                            PasswordHash = "0CNgtKQEnxqgLpMPYKlq+2c1+Y9rc72EUtX4ZE2EKic=",
-                            PasswordSalt = "4h9MVW4JezQ1emYrfKy5lA==",
+                            PasswordHash = "L1IbP95kNo9MPmvNR0MJkYDpWTjtrNjZa4ZFpLfp15E=",
+                            PasswordSalt = "d9b5WSAgMH+L8XWDhiixPg==",
                             Username = "toast"
                         });
                 });

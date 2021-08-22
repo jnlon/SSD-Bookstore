@@ -134,6 +134,25 @@ namespace Bookstore.Controllers
                 bookmark.Tags.Add(th.GetOrCreateNewTag(tagName));
         }
 
+        [HttpGet]
+        public IActionResult Archive(long id)
+        {
+            Bookmark? bookmark = _bookstore.QuerySingleBookmarkById(id);
+            Archive? archive = bookmark?.Archive;
+
+            if (bookmark == null || archive == null)
+                throw new ArgumentException($"Invalid bookmark ID: {id}");
+            
+            Response.Headers.Add("Cache-Control", "public, immutable");
+            Response.Headers.Add("Expires", "Fri, 01 Jan 2500 00:00:00 +0000");
+            Response.Headers.Add("Content-Length", $"{archive.Bytes.Length}");
+            Response.Headers.Add("Content-Type", $"{archive.Mime}");
+
+            byte[] content = archive.Formatted ?? archive.Bytes;
+            
+            return new FileContentResult(content, archive.Mime);
+        }
+        
         [HttpPost]
         public IActionResult Edit([FromForm] long[] id, [FromForm] BookmarkEditDto upload)
         {
