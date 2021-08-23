@@ -1,13 +1,21 @@
+@using Bookstore.Utilities
 @{
     ViewData["Title"] = "Update User";
+    User user = (ViewData["User"] as User)!;
+    string? message = ViewData.ContainsKey("Message") ? ViewData["Message"] as string : null;
 }
 
 <div class="m-3">
     <h1>Update User Account</h1>
-    <form class="d-block w-50">
+    @if (message != null)
+    {
+        <div class="alert alert-danger" role="alert">@message</div>
+    }
+    <form class="d-block w-50" method="POST">
+        <input name="id" type="hidden" value="@user.Id" class="form-control">
         <div class="form-group">
             <label for="username">Email or Username</label>
-            <input name="username" type="text" id="username" class="form-control">
+            <input name="username" type="text" id="username" value="@user.Username" class="form-control">
         </div>
         <div class="form-group">
             <label for="password">Password</label>

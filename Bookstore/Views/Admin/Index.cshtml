@@ -41,6 +41,7 @@
             <tr>
                 <th>Actions</th>
                 <th>Username</th>
+                <th>Administrator</th>
                 <th>Number of Bookmarks</th>
                 <th>Number of Archived Bookmarks</th>
                 <th>Archived Bookmark Disk Usage</th>
@@ -51,13 +52,14 @@
             {
             <tr>
                 <td>
-                    <a asp-action="Edit" asp-route-id="@stats.User.Id">Edit</a>
+                    <a class="btn btn-sm btn-primary" role="button" asp-action="Edit" asp-route-id="@stats.User.Id">Edit</a>
                     @if (currentUser.Id != stats.User.Id)
                     {
-                        <a asp-action="Delete" asp-route-id="@stats.User.Id">Delete</a>
+                        <a class="btn btn-sm btn-danger" role="button" asp-action="Delete" asp-route-id="@stats.User.Id">Delete</a>
                     }
                 </td>
                 <td> @stats.User.Username </td>
+                <td> @(stats.User.Admin ? "Yes" : "No") </td>
                 <td> @stats.NumberOfBookmarks </td>
                 <td> @stats.NumberOfArchivedBookmarks </td>
                 <td> @(stats.ArchivedBookmarkDiskUsage / 1000 / 1000) Mb </td>

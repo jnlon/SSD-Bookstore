@@ -164,6 +164,49 @@ namespace Bookstore.Utilities
             };
         }
 
+        public User? GetUserById(long id)
+        {
+            if (!IsAdmin)
+                throw new UnauthorizedAccessException("User must be an administrator to access this resource");
+
+            return _context.Users.FirstOrDefault(u => u.Id == id);
+        }
+
+        public User? GetUserByUserName(string username)
+        {
+            if (!IsAdmin)
+                throw new UnauthorizedAccessException("User must be an administrator to access this resource");
+            
+            return _context.Users.FirstOrDefault(n => n.Username == username);
+        }
+
+        public void UpdateUserCredentials(long id, string username, string password)
+        {
+            User? user = GetUserById(id);
+            
+            if (user == null)
+                throw new ArgumentException($"User with ID {id} does not exist");
+            
+            var (passwordHash, passwordSalt) = Crypto.GeneratePasswordHash(password);
+            user.Username = username;
+            user.PasswordHash = passwordHash;
+            user.PasswordSalt = passwordSalt;
+        }
+        
+        public void CreateNewUser(string username, string password, bool admin)
+        {
+            var (passwordHash, passwordSalt) = Crypto.GeneratePasswordHash(password);
+            _context.Users.Add(new User
+            {
+                Admin = admin,
+                Bookmarks = new List<Bookmark>(),
+                Settings = Settings.CreateDefault(),
+                Username = username,
+                PasswordHash = passwordHash,
+                PasswordSalt = passwordSalt
+            });
+        }
+
         // Remove 
         public void CleanupBookmarkOrphans()
         {
