@@ -1,15 +1,20 @@
 ﻿@using Bookstore.Utilities
 @using System.Net.Http
+@using Bookstore.Constants.Authorization
 @{
     string controller = ViewContext.RouteData.Values["Controller"] as string;
     string action = ViewContext.RouteData.Values["Action"] as string;
+    bool isIndex = action == "Index";
+    bool isAdmin = User.IsBookstoreAdmin();
+    string navController = isAdmin ? "Admin" : "Bookstore";
+    string title = navController + (isIndex ? string.Empty : $" | {action}");
 }
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>@ViewData["Title"] - Bookstore</title>
+    <title>@title</title>
     <link rel="stylesheet" href="~/css/bootstrap.min.css">
     <link rel="stylesheet" href="~/css/bookstore.css">
     @if (controller == "Bookstore" && action == "Index")
@@ -22,22 +27,20 @@
 <header class="navbar navbar-dark bg-dark">
     <!--<div class="navbar-brand">@ViewData["Title"]</div>-->
     <div class="navbar-brand">
-        <a asp-controller="Bookstore" asp-action="Index">Bookstore</a>
-        @if (controller != "Bookstore")
+        <a asp-controller="@navController" asp-action="Index">@navController</a>
+        @if (!isIndex)
         {
             <span> | </span>
-            <a asp-controller="@controller" asp-action="Index">@controller</a>
-        }
-        @if (action != "Index")
-        {
-            <span> &gt; </span>
             <a asp-controller="@controller" asp-action="@action">@action</a>
         }
     </div>
     <div>
         @if (User.Identity.IsAuthenticated)
         {
-            <span class="mr-2"><a asp-controller="User" asp-action="Settings">Settings</a></span>
+            @if (!isAdmin)
+            {
+                <span class="mr-2"><a asp-controller="User" asp-action="Settings">Settings</a></span>
+            }
             <span><a asp-controller="Account" asp-action="Logout">Logout</a></span>
         }
     </div>

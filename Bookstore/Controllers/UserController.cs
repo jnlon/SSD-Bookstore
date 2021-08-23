@@ -21,10 +21,10 @@ namespace Bookstore.Controllers
     public class SettingsDto
     {
         [FromForm(Name = "default-query")]
-        public string DefaultQuery { get; set; }
+        public string? DefaultQuery { get; set; }
 
         [FromForm(Name = "default-max-results")]
-        public int DefaultMaxResults { get; set; }
+        public int? DefaultMaxResults { get; set; }
 
         [FromForm(Name = "archive-by-default")]
         public bool ArchiveByDefault { get; set; }
@@ -56,23 +56,13 @@ namespace Bookstore.Controllers
         }
         
         [HttpPost]
-        public IActionResult Settings(SettingsDto settingsDto)
+        public IActionResult Settings(SettingsDto settings)
         {
-            User user = _context.Users
-                .Include(u => u.Settings)
-                .First(u => u.Id == _bookstore.User.Id);
-            
-            user.Settings = new Settings()
-            {
-                DefaultQuery = settingsDto.DefaultQuery,
-                UserId = _bookstore.User.Id,
-                ArchiveByDefault = settingsDto.ArchiveByDefault,
-                DefaultPaginationLimit = Math.Min(1000, Math.Max(1, settingsDto.DefaultMaxResults))
-            };
-            
-            _context.Update(user);
+            int paginationLimit = Math.Min(1000, Math.Max(1, settings.DefaultMaxResults ?? 100));
+            string defaultQuery = settings.DefaultQuery ?? "";
+            _bookstore.UpdateUserSettings(defaultQuery, settings.ArchiveByDefault, paginationLimit);
             _context.SaveChanges();
-            return Settings();
+            return RedirectToAction(nameof(Settings));
         }
 
         private void ImportNetscapeBookmarks(Stream stream)
@@ -88,7 +78,7 @@ namespace Bookstore.Controllers
         }
 
         [HttpPost]
-        public string ImportBookmarks([FromForm] ImportFileFormat format, [FromForm] IFormFile content)
+        public IActionResult ImportBookmarks([FromForm] ImportFileFormat format, [FromForm] IFormFile content)
         {
             // TODO: Handle case where file upload is null (treat as empty string?)
             using var stream = content.OpenReadStream();
@@ -98,7 +88,7 @@ namespace Bookstore.Controllers
             else if (format == ImportFileFormat.CSV)
                 ImportCsvBookmarks(stream);
             
-            return $"Format = {format} Content = ...";
+            return RedirectToAction(nameof(Settings));
         }
     }
 }

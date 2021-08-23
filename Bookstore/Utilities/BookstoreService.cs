@@ -19,7 +19,7 @@ namespace Bookstore.Utilities
         
         private User GetUserFromClaims(ClaimsPrincipal user)
         {
-            var maybeValue = user.FindFirst(Claims.UserId)?.Value;
+            var maybeValue = user.FindFirst(BookstoreClaims.UserId)?.Value;
             if (maybeValue is null)
                 return null;
             long value = long.Parse(maybeValue);
@@ -171,13 +171,29 @@ namespace Bookstore.Utilities
 
             return _context.Users.FirstOrDefault(u => u.Id == id);
         }
-
+        
         public User? GetUserByUserName(string username)
         {
             if (!IsAdmin)
                 throw new UnauthorizedAccessException("User must be an administrator to access this resource");
             
             return _context.Users.FirstOrDefault(n => n.Username == username);
+        }
+        
+        // Note: Updates settings for the *current user*
+        public void UpdateUserSettings(string defaultQuery, bool archiveByDefault, int defaultPaginationLimit)
+        {
+            User user = _context.Users
+                .Include(u => u.Settings)
+                .FirstOrDefault(u => u.Id == User.Id)!;
+                
+            user.Settings = new Settings
+            {
+                DefaultQuery = defaultQuery,
+                UserId = User.Id,
+                ArchiveByDefault = archiveByDefault,
+                DefaultPaginationLimit = defaultPaginationLimit
+            };
         }
 
         public void UpdateUserCredentials(long id, string username, string password)

@@ -47,8 +47,8 @@ namespace Bookstore
             string schema = CookieAuthenticationDefaults.AuthenticationScheme; // defaults to "Cookies"
             services.AddAuthorization(options =>
             {
-                options.AddPolicy(Policy.AdminOnly, policy => policy.RequireClaim("role", Roles.Admin));
-                options.AddPolicy(Policy.MemberOnly, policy => policy.RequireClaim("role", Roles.Member));
+                options.AddPolicy(Policy.AdminOnly, policy => policy.RequireClaim("role", BookstoreRoles.Admin));
+                options.AddPolicy(Policy.MemberOnly, policy => policy.RequireClaim("role", BookstoreRoles.Member));
                 options.FallbackPolicy = new AuthorizationPolicyBuilder()
                     .RequireAuthenticatedUser()
                     .Build();
@@ -104,7 +104,7 @@ namespace Bookstore
             
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllerRoute(name: "default", pattern: "{controller=Bookstore}/{action=Index}/{id?}");
+                endpoints.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
             });
         }
     }

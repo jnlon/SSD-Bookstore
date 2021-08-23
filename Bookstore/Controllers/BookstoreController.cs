@@ -1,18 +1,10 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Linq;
-using System.Security.Claims;
-using Bookstore.Constants.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Bookstore.Models;
 using Bookstore.Models.View;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Bookstore.Utilities;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Routing;
 
 namespace Bookstore.Controllers

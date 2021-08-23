@@ -1,6 +1,8 @@
 using System;
 using System.IO;
 using System.Net.Http;
+using System.Security.Claims;
+using Bookstore.Constants.Authorization;
 
 namespace Bookstore.Utilities
 {
@@ -20,6 +22,16 @@ namespace Bookstore.Utilities
             }
             
             return memoryStream.ToArray();
+        }
+
+        public static bool IsBookstoreAdmin(this ClaimsPrincipal user)
+        {
+            return user.HasClaim(c => c.Type == BookstoreClaims.Role && c.Value == BookstoreRoles.Admin);
+        }
+        
+        public static bool IsBookstoreMember(this ClaimsPrincipal user)
+        {
+            return user.HasClaim(c => c.Type == BookstoreClaims.Role && c.Value == BookstoreRoles.Member);
         }
     }
 }

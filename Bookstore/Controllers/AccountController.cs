@@ -23,16 +23,6 @@ namespace Bookstore.Controllers
             _context = context;
         }
             
-        public void AddUser()
-        {
-            //_context
-        }
-        
-        private bool ValidateLogin(User user, string password)
-        {
-            return Crypto.PasswordHashMatches(password, user.PasswordHash, user.PasswordSalt);
-        }
-        
         [HttpGet]
         [AllowAnonymous]
         public IActionResult Login()
@@ -51,9 +41,9 @@ namespace Bookstore.Controllers
                 {
                     var claims = new List<Claim>
                     {
-                        new(Claims.UserId, user.Id.ToString()),
-                        new(Claims.UserName, username),
-                        new(Claims.Role, user.Admin ? Roles.Admin : Roles.Member)
+                        new(BookstoreClaims.UserId, user.Id.ToString()),
+                        new(BookstoreClaims.UserName, username),
+                        new(BookstoreClaims.Role, user.Admin ? BookstoreRoles.Admin : BookstoreRoles.Member)
                     };
 
                     // create cookie and add it to current response
@@ -70,6 +60,11 @@ namespace Bookstore.Controllers
         public IActionResult AccessDenied(string returnUrl = null)
         {
             return View();
+        }
+        
+        private bool ValidateLogin(User user, string password)
+        {
+            return Crypto.PasswordHashMatches(password, user.PasswordHash, user.PasswordSalt);
         }
 
         public async Task<IActionResult> Logout()
