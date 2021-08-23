@@ -16,6 +16,22 @@
     
     string? navDisableStart = pageNumber == 1 ? "disabled" : null;
     string? navDisableEnd = pageNumber == maxPageNumber ? "disabled" : null;
+    
+    // Pagination calculations
+    //int expectedSlots = 11;
+    int visibility = 5;
+    int start = Math.Max(1, pageNumber - visibility);
+    int end = Math.Min(pageNumber + visibility, maxPageNumber);
+    int requiredGrowth = visibility*2 - (end - start);
+    
+    if (pageNumber <= visibility+1)
+        end += requiredGrowth;
+
+    if (pageNumber > maxPageNumber - visibility)
+        start -= requiredGrowth;
+    
+    start = Math.Max(1, start);
+    end = Math.Min(end, maxPageNumber);
 }
 
 <div class="m-4">
@@ -62,31 +78,35 @@
         </div>
         
         <div>
-            <nav class="text-center justify-content-around d-flex justify-content-between mx-auto w-100">
-                <a class="btn btn-primary align-self-center @navDisableStart"
+            <nav class="text-center d-flex justify-content-center align-items-center mx-auto w-100 mb-3">
+                <a class="btn btn-primary @navDisableStart btn-sm font-weight-bold"
                    role="button"
+                   style="font-size:1.0em; width: 4em;"
                    asp-controller="Bookstore"
                    asp-action="Index"
                    asp-route-search="@search.QueryString"
-                   asp-route-page="@Math.Max(pageNumber - 1, 1)">Previous</a>
+                   asp-route-page="@Math.Max(pageNumber - 1, 1)">Prev</a>
                 
-                <ul class="pagination d-inline-flex w-100 justify-content-center">
-                    <li class="page-item @navDisableStart">
+                <ul class="pagination d-inline-flex justify-content-center mb-0 mx-2">
+                    <li class="page-item @navDisableStart" style="width: 3em;">
                         <a class="page-link" asp-controller="Bookstore" asp-action="Index" asp-route-search="@search.QueryString" asp-route-page="page">&laquo;</a>
                     </li>
-                    @for (int pn = Math.Max(1, pageNumber - 5); pn <= Math.Min(pageNumber + 5, maxPageNumber); pn++)
+                    @{
+                    }
+                    @for (int pn = start; pn <= end; pn++)
                     {
-                        <li class="page-item @(pageNumber == pn ? "active" : "")">
+                        <li class="page-item @(pageNumber == pn ? "active" : "")" style="width: 3em;">
                             <a class="page-link" asp-controller="Bookstore" asp-action="Index" asp-route-search="@search.QueryString" asp-route-page="@pn">@pn</a>
                         </li>
                     }
-                    <li class="page-item @navDisableEnd">
+                    <li class="page-item @navDisableEnd" style="width: 3em;">
                         <a class="page-link" asp-controller="Bookstore" asp-action="Index" asp-route-search="@search.QueryString" asp-route-page="@maxPageNumber">&raquo;</a>
                     </li>
                 </ul>
                 
-                <a class="btn btn-primary align-self-center @navDisableEnd"
+                <a class="btn btn-primary @navDisableEnd btn-sm font-weight-bold"
                    role="button"
+                   style="font-size:1.0em; width: 4em;"
                    asp-controller="Bookstore"
                    asp-action="Index"
                    asp-route-search="@search.QueryString"
@@ -180,31 +200,35 @@
         </table>
         
         <div>
-            <nav class="text-center justify-content-around d-flex justify-content-between mx-auto w-100">
-                <a class="btn btn-primary align-self-center @navDisableStart"
+            <nav class="text-center d-flex justify-content-center align-items-center mx-auto w-100 mb-3">
+                <a class="btn btn-primary @navDisableStart btn-sm font-weight-bold"
                    role="button"
+                   style="font-size:1.0em; width: 4em;"
                    asp-controller="Bookstore"
                    asp-action="Index"
                    asp-route-search="@search.QueryString"
-                   asp-route-page="@Math.Max(pageNumber - 1, 1)">Previous</a>
+                   asp-route-page="@Math.Max(pageNumber - 1, 1)">Prev</a>
                 
-                <ul class="pagination d-inline-flex w-100 justify-content-center">
-                    <li class="page-item @navDisableStart">
+                <ul class="pagination d-inline-flex justify-content-center mb-0 mx-2">
+                    <li class="page-item @navDisableStart" style="width: 3em;">
                         <a class="page-link" asp-controller="Bookstore" asp-action="Index" asp-route-search="@search.QueryString" asp-route-page="page">&laquo;</a>
                     </li>
-                    @for (int pn = Math.Max(1, pageNumber - 5); pn <= Math.Min(pageNumber + 5, maxPageNumber); pn++)
+                    @{
+                    }
+                    @for (int pn = start; pn <= end; pn++)
                     {
-                        <li class="page-item @(pageNumber == pn ? "active" : "")">
+                        <li class="page-item @(pageNumber == pn ? "active" : "")" style="width: 3em;">
                             <a class="page-link" asp-controller="Bookstore" asp-action="Index" asp-route-search="@search.QueryString" asp-route-page="@pn">@pn</a>
                         </li>
                     }
-                    <li class="page-item @navDisableEnd">
+                    <li class="page-item @navDisableEnd" style="width: 3em;">
                         <a class="page-link" asp-controller="Bookstore" asp-action="Index" asp-route-search="@search.QueryString" asp-route-page="@maxPageNumber">&raquo;</a>
                     </li>
                 </ul>
                 
-                <a class="btn btn-primary align-self-center @navDisableEnd"
+                <a class="btn btn-primary @navDisableEnd btn-sm font-weight-bold"
                    role="button"
+                   style="font-size:1.0em; width: 4em;"
                    asp-controller="Bookstore"
                    asp-action="Index"
                    asp-route-search="@search.QueryString"
