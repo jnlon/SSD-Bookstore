@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Composition;
 using System.Linq;
 using BookmarksManager;
@@ -18,6 +19,11 @@ namespace Bookstore.Utilities
 
         private static BookmarkLink ExportBookmark(Bookmark bookmark)
         {
+            var attributes = new Dictionary<string, string>();
+
+            if (bookmark.Tags.Count > 0)
+                attributes["tags"] = string.Join(",", bookmark.Tags.Select(t => t.Name));
+            
             return new BookmarkLink
             {
                 Url = bookmark.Url.ToString(),
@@ -25,7 +31,8 @@ namespace Bookstore.Utilities
                 Title = bookmark.Title,
                 LastModified = bookmark.Modified,
                 IconData = bookmark.Favicon,
-                IconContentType = bookmark.FaviconMime
+                IconContentType = bookmark.FaviconMime,
+                Attributes = attributes
             };
         }
 

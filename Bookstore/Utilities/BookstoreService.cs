@@ -209,6 +209,39 @@ namespace Bookstore.Utilities
             user.PasswordSalt = passwordSalt;
         }
         
+        public Tag CreateNewTag(string tagName)
+        {
+            var tag = new Tag { Name = tagName, UserId = _user.Id };
+            _context.Tags.Add(tag);
+            return tag;
+        }
+        
+        public Folder CreateFolder(string folderName, Folder? parent)
+        {
+            var folder = new Folder { Name = folderName, Parent = parent, UserId = _user.Id};
+            _context.Folders.Add(folder);
+            return folder;
+        }
+
+        public Bookmark CreateBookmark(Archive? archive, DateTime created, DateTime modified, byte[]? favicon, string? faviconMime, Folder? folder, HashSet<Tag> tags, string title, Uri url)
+        {
+            var bookmark = new Bookmark
+            {
+               Archive = archive, 
+               Created = created,
+               Favicon = favicon,
+               FaviconMime = faviconMime,
+               Folder = folder,
+               Modified = created,
+               Tags = tags,
+               Title = title,
+               User = _user,
+               Url = url
+            };
+            _context.Bookmarks.Add(bookmark);
+            return bookmark;
+        }
+        
         public void CreateNewUser(string username, string password, bool admin)
         {
             var (passwordHash, passwordSalt) = Crypto.GeneratePasswordHash(password);

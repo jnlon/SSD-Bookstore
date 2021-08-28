@@ -10,48 +10,6 @@ using CsvHelper;
 
 namespace Bookstore.Utilities
 {
-
-    public class BookstoreCsv
-    {
-        public string Title { get; private set; }
-        public Uri Url  { get; private set; }
-        public HashSet<Tag> Tags { get; private set; }
-        public string FolderPath { get; private set; }
-        public DateTime CreatedDate { get; private set; }
-        public DateTime ModifiedDate { get; private set; }
-
-        public static BookstoreCsv FromBookmark(Bookmark bm)
-        {
-            return new BookstoreCsv
-            {
-                Tags = bm.Tags,
-                Title = bm.Title,
-                Url = bm.Url,
-                CreatedDate = bm.Created,
-                FolderPath = bm?.Folder?.ToMenuString() ?? "",
-                ModifiedDate = bm.Modified,
-            };
-        }
-
-        public Bookmark ToBookmark()
-        {
-            return new Bookmark()
-            {
-                Title = Title,
-                Url = Url,
-                Tags = Tags,
-                
-                // TODO: We need a way of looking up appropriate folder, or making it...
-                // How about folder.ParseFromMenuString() ? And the menu separator can be set as a class constant...
-                Folder = null, 
-                
-                Created = CreatedDate,
-                Modified = ModifiedDate,
-            };
-        }
-    }
-    
-    
     public class CsvExporter
     {
         private BookstoreService _service;

@@ -75,8 +75,6 @@ namespace Bookstore.Controllers
                 PortAction.Import => ImportBookmarks(format, content),
                 _ => throw new ArgumentException("Invalid settings action code: " + action)
             };
-
-            // TODO: Use CSV Helper here
         }
         
         private IActionResult ExportBookmarks(PortFileFormat format)
@@ -115,18 +113,20 @@ namespace Bookstore.Controllers
 
             if (format == PortFileFormat.Netscape)
             {
-                var importer = new NetscapeImporter(_context, _bookstore);
+                var importer = new NetscapeImporter(_bookstore);
                 importer.Import(stream);
             }
             else if (format == PortFileFormat.CSV)
             {
-                // TODO:
-                throw new NotImplementedException();
+                var importer = new CsvImporter(_bookstore);
+                importer.Import(stream);
             }
             else
             {
                 throw new ArgumentException("Invalid Format: " + format);
             }
+            
+            _context.SaveChanges();
             
             return RedirectToAction(nameof(Settings));
         }

@@ -5,6 +5,9 @@ namespace Bookstore.Models
 {
     public class Folder
     {
+        //public static string Seperator = ">";
+        public static string Seperator = "/";
+        
         public long Id { get; set; }
         public long UserId { get; set; }
         public string Name { get; set; }
@@ -32,7 +35,7 @@ namespace Bookstore.Models
 
         public string ToMenuString()
         {
-            return string.Join(" > ", ToArray().Select(f => f.Name));
+            return string.Join($"{Seperator}", ToArray().Select(f => f.Name));
         }
     }
 }

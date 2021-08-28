@@ -12,107 +12,13 @@ namespace Bookstore.Utilities
 {
     public class NetscapeImporter
     {
-        private BookmarksContext _context;
-        private List<Folder> _folders;
-        private List<Tag> _tags;
-        private User _user;
+        private BookstoreResolver _resolver;
+        private BookstoreService _bookstore;
 
-        public NetscapeImporter(BookmarksContext context, BookstoreService bookstore)
+        public NetscapeImporter(BookstoreService bookstore)
         {
-            _context = context;
-            _folders = bookstore.QueryAllUserFolders().ToList();
-            _tags = bookstore.QueryAllUserTags().ToList();
-            _user = bookstore.User;
-        }
-
-        private Tag ResolveTag(string tagName)
-        {
-           // Create new tag if it does not exist
-           Tag? tag = _tags.FirstOrDefault(t => t.Name == tagName && t.UserId == _user.Id);
-           
-           if (tag is null)
-           {
-               tag = new Tag 
-               {
-                   Name = tagName,
-                   UserId = _user.Id
-               };
-               _context.Tags.Add(tag);
-               _tags.Add(tag);
-           }
-           
-           return tag;
-        }
-
-        private List<Tag> ResolveTags(BookmarkLink link)
-        {
-            if (link.Attributes.ContainsKey("tags"))
-            {
-               return link.Attributes["tags"]
-                   .Split(',')
-                   .Select(ResolveTag)
-                   .ToList();
-            }
-
-            return new List<Tag>();
-        }
-
-        private Folder? ResolveFolder(string[] folderPath)
-        {
-            foreach (Folder folder in _folders)
-            {
-                if (folder.ToStringArray().SequenceEqual(folderPath))
-                {
-                    return folder;
-                }
-            }
-            
-            return null;
-        }
-
-        private Folder CreateFolderPath(string[] folderPath)
-        {
-            int resolvedDepth = 0;
-            Folder? resolved = null;
-            for (int i=0; i <= folderPath.Length; i++)
-            {
-                resolved = ResolveFolder(folderPath.SkipLast(i).ToArray());
-                if (resolved != null)
-                {
-                    resolvedDepth = folderPath.Length - i;
-                    break;
-                }
-            }
-
-            foreach (var unresolvedFolderSegment in folderPath.Skip(resolvedDepth).ToArray())
-            {
-                Folder newFolder = new Folder()
-                {
-                    Name = unresolvedFolderSegment,
-                    Parent = resolved,
-                    UserId = _user.Id
-                };
-                _folders.Add(newFolder);
-                _context.Add(newFolder);
-                resolved = newFolder;
-            }
-
-            return resolved!;
-        }
-
-        private string ExtractIconMime(BookmarkLink link)
-        {
-            if (link.IconUrl?.StartsWith("data:") ?? false)
-            {
-                var match = Regex.Match(link.IconUrl, @"^data:(?<mime>[\w/\-\.]+)(;\w+)?,");
-                var mime = match.Groups["mime"];
-                if (mime.Success)
-                {
-                    return mime.Value;
-                }
-            }
-            
-            return link.IconContentType;
+            _bookstore = bookstore;
+            _resolver = new BookstoreResolver(bookstore);
         }
 
         public string DetectFaviconMimeType(BookmarkLink link)
@@ -130,19 +36,33 @@ namespace Bookstore.Utilities
 
         private void ImportBookmark(string[] folderStackArray, BookmarkLink link)
         {
-           _context.Bookmarks.Add(new Bookmark()
-           {
-               Archive = null,
-               Created = link.Added ?? new DateTime(),
-               Favicon = (link.IconData != null && link.IconData.Length > 0) ? link.IconData : null,
-               FaviconMime = (link.IconData != null && link.IconData.Length > 0) ? DetectFaviconMimeType(link) : null,
-               Folder = ResolveFolder(folderStackArray) ?? CreateFolderPath(folderStackArray),
-               Modified = link.Added ?? new DateTime(),
-               Tags = ResolveTags(link).ToHashSet(),
-               Title = link.Title,
-               User = _user,
-               Url = new Uri(link.Url)
-           });
+            byte[]? favicon = null;
+            string? faviconMime = null;
+            
+            if (link.IconData != null && link.IconData.Length > 0)
+            {
+                favicon = link.IconData;
+                faviconMime = DetectFaviconMimeType(link);
+            }
+            
+            HashSet<Tag> tags = new();
+
+            if (link.Attributes.ContainsKey("tags"))
+            {
+                tags = _resolver.ResolveTags(link.Attributes["tags"].Split(','));
+            }
+                
+            _bookstore.CreateBookmark(
+                archive: null,
+                created: link.Added ?? DateTime.Now,
+                modified: link.Added ?? DateTime.Now,
+                favicon: favicon,
+                faviconMime: faviconMime,
+                folder: _resolver.ResolveFolder(folderStackArray),
+                tags: tags,
+                title: link.Title,
+                url: new Uri(link.Url)
+            );
         }
 
         private void ImportFolder(Stack<string> folderStack, BookmarkFolder currentFolder)
@@ -163,7 +83,6 @@ namespace Bookstore.Utilities
         {
            var parsed = new NetscapeBookmarksReader().Read(stream);
            ImportFolder(new Stack<string>(), parsed);
-           _context.SaveChanges(); 
         }
     }
 }
