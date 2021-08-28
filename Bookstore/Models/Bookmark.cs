@@ -12,6 +12,7 @@ namespace Bookstore.Models
         public long UserId { get; set; }
         public User User { get; set; }
         public Folder? Folder { get; set; } // When folder is null, this bookmark exists at the root
+        public long FolderId { get; set; } // When folder is null, this bookmark exists at the root
         public DateTime Created { get; set; }
         public DateTime Modified { get; set; }
         public Uri Url { get; set; }

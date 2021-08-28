@@ -9,14 +9,15 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Net.Http.Headers;
 
 namespace Bookstore.Controllers
 {
-    public enum ImportFileFormat
-    {
-        Netscape,
-        CSV
-    }
+    // Import or Export types
+    public enum PortFileFormat { Netscape, CSV }
+
+    // Action
+    public enum PortAction { Import, Export }
 
     public class SettingsDto
     {
@@ -65,28 +66,67 @@ namespace Bookstore.Controllers
             return RedirectToAction(nameof(Settings));
         }
 
-        private void ImportNetscapeBookmarks(Stream stream)
+        [HttpPost]
+        public IActionResult PortBookmarks(PortAction action, [FromForm] PortFileFormat format, [FromForm] IFormFile? content = null)
         {
-            //this.User
-            var importer = new NetscapeImporter(_context, _bookstore);
-            importer.Import(stream);
-        }
+            return action switch
+            {
+                PortAction.Export => ExportBookmarks(format),
+                PortAction.Import => ImportBookmarks(format, content),
+                _ => throw new ArgumentException("Invalid settings action code: " + action)
+            };
 
-        private void ImportCsvBookmarks(Stream stream)
-        {
             // TODO: Use CSV Helper here
         }
-
-        [HttpPost]
-        public IActionResult ImportBookmarks([FromForm] ImportFileFormat format, [FromForm] IFormFile content)
+        
+        private IActionResult ExportBookmarks(PortFileFormat format)
         {
+            ContentResult result = new();
+            
+            if (format == PortFileFormat.Netscape)
+            {
+                var exporter = new NetscapeExporter(_bookstore);
+                result.Content = exporter.Export();
+                result.ContentType = "text/html";
+                Response.Headers.Add("Content-Disposition", $"attachment; filename=\"bookmarks_{DateTime.Now:yyyy-MM-d}.html\"");
+            }
+            else if (format == PortFileFormat.CSV)
+            {
+                var exporter = new CsvExporter(_bookstore);
+                result.Content = exporter.Export();
+                result.ContentType = "text/csv";
+                Response.Headers.Add("Content-Disposition", $"attachment; filename=\"BookstoreExport_{DateTime.Now:yyyy-MM-d}.csv\"");
+            }
+            else
+            {
+                throw new ArgumentException("Invalid Format: " + format);
+            }
+
+            return result;
+        }
+        
+        private IActionResult ImportBookmarks([FromForm] PortFileFormat format, [FromForm] IFormFile? content)
+        {
+            if (content == null)
+                throw new ArgumentException("No file uploaded!");
+            
             // TODO: Handle case where file upload is null (treat as empty string?)
             using var stream = content.OpenReadStream();
 
-            if (format == ImportFileFormat.Netscape)
-                ImportNetscapeBookmarks(stream);
-            else if (format == ImportFileFormat.CSV)
-                ImportCsvBookmarks(stream);
+            if (format == PortFileFormat.Netscape)
+            {
+                var importer = new NetscapeImporter(_context, _bookstore);
+                importer.Import(stream);
+            }
+            else if (format == PortFileFormat.CSV)
+            {
+                // TODO:
+                throw new NotImplementedException();
+            }
+            else
+            {
+                throw new ArgumentException("Invalid Format: " + format);
+            }
             
             return RedirectToAction(nameof(Settings));
         }
