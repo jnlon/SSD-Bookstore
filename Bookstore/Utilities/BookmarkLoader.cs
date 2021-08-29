@@ -15,35 +15,27 @@ namespace Bookstore.Utilities
     {
         private class Download
         {
-            private readonly HttpResponseMessage? _response;
+            public readonly HttpResponseMessage? Response;
             public Download(HttpClient client, Uri uri)
             {
                 try
                 {
-                    _response = client.GetAsync(uri).Result;
+                    Response = client.GetAsync(uri).Result;
                 }
                 catch (Exception)
                 {
-                    _response = null;
+                    Response = null;
                 }
             }
             
-            public bool Success => _response?.IsSuccessStatusCode ?? false;
-            public string? ContentType => _response?.Content.Headers.ContentType?.ToString();
+            public bool Success => Response?.IsSuccessStatusCode ?? false;
+            public string? ContentType => Response?.Content.Headers.ContentType?.ToString();
             public bool IsImageMime => ContentType?.ToLower().Contains("image") ?? false;
             public bool IsHtmlMime => ContentType?.ToLower().Contains("html") ?? false;
 
-            public Stream? ReadAsStream(uint limitBytes)
-            {
-                if (_response.Content.Headers.ContentLength < limitBytes)
-                    return _response.Content.ReadAsStream();
-                
-                return null;
-            }
-
             public byte[]? ReadAsBytes(uint limitBytes)
             {
-                return _response.Content.ReadAsByteArrayLimited(limitBytes);
+                return Response?.Content.ReadAsByteArrayLimited(limitBytes);
             }
         }
 
@@ -53,11 +45,11 @@ namespace Bookstore.Utilities
             public Uri? IconUri { get; }
             private readonly Uri _source;
             private readonly HtmlDocument _doc;
-            public Html(Stream? content, Uri source)
+            public Html(byte[] content, Uri source)
             {
                 _source = source;
                 _doc = new HtmlDocument();
-                _doc.Load(content ?? new MemoryStream());
+                _doc.Load(new MemoryStream(content));
                 IconUri = FindIconUri();
                 Title = _doc.DocumentNode.SelectSingleNode("//head/title")?.InnerText;
             }
@@ -82,9 +74,13 @@ namespace Bookstore.Utilities
         public string? FaviconMimeType { get; private set; }
         public byte[]? Favicon { get; private set; }
         public string Title { get; private set; } = string.Empty;
+        
+        public byte[]? Raw { get; private set; }
+        public HttpResponseMessage? Response { get; private set; }
 
         public static BookmarkLoader Create(Uri bookmarkUrl, HttpClient client)
         {
+            byte[]? rawHtml = null;
             Html? html = null;
             byte[]? favicon = null;
             string? faviconMimeType = null;
@@ -92,7 +88,10 @@ namespace Bookstore.Utilities
             // Download the bookmark. If it was successful, and was an HTML file, load HTMLHelper
             var htmlDownload = new Download(client, bookmarkUrl);
             if (htmlDownload.Success && htmlDownload.IsHtmlMime)
-                html = new Html(htmlDownload.ReadAsStream(MaxDownloadSize), bookmarkUrl);
+            {
+                rawHtml = htmlDownload.ReadAsBytes(MaxDownloadSize);
+                html = new Html(rawHtml, bookmarkUrl);
+            }
             
             // Retrieve favicon from the HTMl, or fall back to standard location
             var faviconUrl = html?.IconUri ?? new UriBuilder(bookmarkUrl) { Path = "/favicon.ico" }.Uri;
@@ -108,11 +107,13 @@ namespace Bookstore.Utilities
 
             string title = html?.Title == null ? bookmarkUrl.ToString() : WebUtility.HtmlDecode(html.Title);
             
-            return new BookmarkLoader()
+            return new BookmarkLoader
             {
                 FaviconMimeType = faviconMimeType,
                 Favicon = favicon,
-                Title = title
+                Title = title,
+                Raw = rawHtml,
+                Response = htmlDownload.Response
             };
         }
     }

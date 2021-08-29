@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Threading.Tasks;
 using Bookstore.Models;
 using Bookstore.Models.View;
 using Bookstore.Utilities;
@@ -37,9 +38,6 @@ namespace Bookstore.Controllers
         [HttpGet]
         public FileContentResult Favicon(long id)
         {
-            // User user = _context.GetUser(User).Include(u => u.Bookmarks).First();
-            // Bookmark bookmark = user.Bookmarks.Single(bm => bm.Id == id);
-
             Bookmark? bookmark = _bookstore.GetSingleBookmarkById(id);
             byte[] icon = bookmark?.Favicon ?? new byte[]{};
             string iconMimeType = bookmark?.FaviconMime ?? "";
@@ -77,12 +75,12 @@ namespace Bookstore.Controllers
                 routeValues["Error"] = $@"Bookmark with URL ""{urlString}"" already exists";
                 return RedirectToAction("Create", "Bookmarks", routeValues);
             }
-                
+
+            var settings = _bookstore.GetUserSettings();
             var load = BookmarkLoader.Create(url, _httpClientFactory.CreateClient());
-            
-            _context.Bookmarks.Add(new Bookmark()
+            var bookmark = new Bookmark
             {
-                Archive = null, // TODO: Get based on form setting if this is enabled?
+                Archive = null,
                 UserId = _bookstore.User.Id,
                 User = _bookstore.User,
                 Created = DateTime.Now,
@@ -95,8 +93,15 @@ namespace Bookstore.Controllers
                 Url = url,
                 ArchiveId = null,
                 FolderId = null
-            });
+            };
+            
+            if (settings.ArchiveByDefault)
+            {
+                var archiver = new BookmarkArchiver();
+                archiver.Archive(bookmark, load.Response, load.Raw);
+            }
 
+            _context.Bookmarks.Add(bookmark);
             _context.SaveChanges();
 
             if (editRedirect)
@@ -134,9 +139,9 @@ namespace Bookstore.Controllers
             public string? CustomFolder { get; set; } // Only if user chooses to create a new folder
         }
         
-        private void EditBookmark(long id, BookmarkEditDto upload, BookstoreResolver resolver, Folder? folder, bool singleEdit)
+        private void EditBookmark(long id, BookmarkEditDto upload, HashSet<Tag> tags, Folder? folder, bool singleEdit)
         {
-            Bookmark? bookmark = _bookstore.GetSingleBookmarkById(id);
+            Bookmark? bookmark = _bookstore.QueryAllUserBookmarks().FirstOrDefault(bm => bm.Id == id);
 
             if (bookmark == null)
                 throw new ArgumentException($"Unable to find bookmark with ID = {id}");
@@ -150,13 +155,10 @@ namespace Bookstore.Controllers
                 bookmark.Url = bookmark.Url;
             }
             
-            HashSet<string> tagNames = upload.Tags
-                ?.Split(",")
-                .Select(t => t.Trim().ToLower())
-                .ToHashSet() ?? new HashSet<string>();
-
             // Clear previous tags
-            bookmark.Tags = resolver.ResolveTags(tagNames);
+            bookmark.Tags = tags;
+            
+            _context.Update(bookmark);
         }
 
         [HttpGet]
@@ -204,9 +206,14 @@ namespace Bookstore.Controllers
                     }
                 }
                 
+                HashSet<string> tagNames = upload.Tags?.Split(",").Select(t => t.Trim().ToLower()).ToHashSet()
+                                           ?? new HashSet<string>();
+
+                var tags = resolver.ResolveTags(tagNames);
+                
                 foreach (long bookmarkId in id)
                 {
-                    EditBookmark(bookmarkId, upload, resolver, folder, singleEdit);
+                    EditBookmark(bookmarkId, upload, tags, folder, singleEdit);
                 }
             }
             catch (Exception e)

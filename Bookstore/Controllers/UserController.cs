@@ -85,11 +85,13 @@ namespace Bookstore.Controllers
         [HttpPost]
         public IActionResult Settings(SettingsDto settings)
         {
+            var routeValues = new RouteValueDictionary();
             int paginationLimit = Math.Min(1000, Math.Max(1, settings.DefaultMaxResults ?? 100));
             string defaultQuery = settings.DefaultQuery ?? "";
             _bookstore.UpdateUserSettings(defaultQuery, settings.ArchiveByDefault, paginationLimit);
             _context.SaveChanges();
-            return RedirectToAction(nameof(Settings));
+            routeValues["Message"] = "Settings updated successfully";
+            return RedirectToAction(nameof(Settings), routeValues);
         }
 
         [HttpPost]

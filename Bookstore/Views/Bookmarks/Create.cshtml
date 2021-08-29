@@ -12,13 +12,9 @@
         </div>
         <div class="form-group">
             <input class="" id="archive-bookmark" name="archive-bookmark" value="true" type="checkbox" @archiveByDefaultChecked>
-            <label for="archive-bookmark">Archive Bookmark</label>
+            <label for="archive-bookmark" style="cursor: pointer;">Archive Bookmark</label>
         </div>
         <div class="form-group">
-        <!--
-        <input class="btn btn-primary" type="submit" asp-controller="Bookmarks" asp-action="LoadAndEdit" formmethod="post" value="Load and Edit">
-        <input class="btn btn-primary" type="submit" asp-controller="Bookmarks" asp-action="Save" formmethod="post" value="Save">
-        -->
         <input class="btn btn-primary" type="submit" asp-action="Save" asp-route-editRedirect="true" formmethod="post" value="Load and Edit">
         <input class="btn btn-primary" type="submit" asp-action="Save" formmethod="post" value="Save">
         </div>

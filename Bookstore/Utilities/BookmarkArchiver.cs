@@ -65,7 +65,7 @@ namespace Bookstore.Utilities
             return response;
         }
 
-        public static string PlainTextFromHtml(HtmlDocument doc)
+        private static string PlainTextFromHtml(HtmlDocument doc)
         {
             string rawText = doc.DocumentNode?.SelectNodes("//body")?.FirstOrDefault()?.InnerText ?? "";
             string normalizedText = Regex.Replace(rawText, @"\W+", " ");
@@ -113,22 +113,14 @@ namespace Bookstore.Utilities
             };
         }
 
-        public async Task Archive(Bookmark bookmark)
+        public void Archive(Bookmark bookmark, HttpResponseMessage? response, byte[]? raw)
         {
-            HttpResponseMessage response;
-            try
+            if (response == null || raw == null)
             {
-                response = await Download(bookmark.Url);
-            }
-            catch (DownloadException dle)
-            {
-                // TODO: We should log something here, or add the error message to the archive object?
                 return;
             }
             
             string mime = response.Content.Headers.ContentType?.MediaType ?? "application/octet-stream";
-            byte[] raw = await response.Content.ReadAsByteArrayAsync();
-
             string? plainText = null;
             byte[]? cleanHtml = null;
             
@@ -149,6 +141,23 @@ namespace Bookstore.Utilities
                 Formatted = cleanHtml,
                 Mime = mime,
             };
+        }
+
+        public async Task Archive(Bookmark bookmark)
+        {
+            HttpResponseMessage response;
+            try
+            {
+                response = await Download(bookmark.Url);
+            }
+            catch (DownloadException dle)
+            {
+                // TODO: We should log something here, or add the error message to the archive object?
+                return;
+            }
+            
+            byte[] raw = await response.Content.ReadAsByteArrayAsync();
+            Archive(bookmark, response, raw);
         }
         
         public void ArchiveAll(IEnumerable<Bookmark> bookmarks)

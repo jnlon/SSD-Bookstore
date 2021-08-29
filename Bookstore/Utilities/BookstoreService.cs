@@ -312,7 +312,7 @@ namespace Bookstore.Utilities
                 bool isEmptyFolder = folder
                     .Bookmarks
                     .All(bm => bookmarksToDelete.Any(tdl => tdl.Id == bm.Id));
-                
+
                 return isEmptyFolder &&
                        allFolders.Where(f => f.ParentId == folder.Id).All(CanDeleteFolder);
             }
@@ -327,6 +327,7 @@ namespace Bookstore.Utilities
 
             var foldersToDelete = allFolders
                 .Where(CanDeleteFolder)
+                .Where(f => !foldersToAdd.Any(fa => fa.ToArray().SequenceEqual(f.ToArray())))
                 .ToList();
             
             var tagsToDelete = QueryAllUserTags()
