@@ -2,23 +2,24 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Claims;
-using System.Text.RegularExpressions;
 using BookmarksManager;
 using Bookstore.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace Bookstore.Utilities
 {
-    public class NetscapeImporter
+    public class NetscapeImporter : IBookmarkImporter
     {
         private BookstoreResolver _resolver;
         private BookstoreService _bookstore;
+        private int _importCount;
+        private List<Uri> _existingBookmarks;
 
         public NetscapeImporter(BookstoreService bookstore)
         {
             _bookstore = bookstore;
             _resolver = new BookstoreResolver(bookstore);
+            _importCount = 0;
+            _existingBookmarks = _bookstore.QueryAllUserBookmarks().Select(bm => bm.Url).ToList();
         }
 
         public string DetectFaviconMimeType(BookmarkLink link)
@@ -36,6 +37,10 @@ namespace Bookstore.Utilities
 
         private void ImportBookmark(string[] folderStackArray, BookmarkLink link)
         {
+            // Do not import bookmarks matching existing URLs
+            if (_existingBookmarks.Contains(new Uri(link.Url)))
+                return;
+            
             byte[]? favicon = null;
             string? faviconMime = null;
             
@@ -63,6 +68,8 @@ namespace Bookstore.Utilities
                 title: link.Title,
                 url: new Uri(link.Url)
             );
+            
+            _importCount += 1;
         }
 
         private void ImportFolder(Stack<string> folderStack, BookmarkFolder currentFolder)
@@ -79,10 +86,11 @@ namespace Bookstore.Utilities
             }
         }
 
-        public void Import(Stream stream)
+        public int Import(Stream stream)
         {
            var parsed = new NetscapeBookmarksReader().Read(stream);
            ImportFolder(new Stack<string>(), parsed);
+           return _importCount;
         }
     }
 }

@@ -1,17 +1,17 @@
+using System;
 using System.Collections.Generic;
-using System.Composition;
 using System.Linq;
 using BookmarksManager;
 using Bookstore.Models;
 
 namespace Bookstore.Utilities
 {
-    // Goal: Take all bookmarks from database, and stuff it into BookmarksManager, then call
-    //      (new NetscapeBookmarksWritter(bookmarks)).ToString();
-    // To export
-    public class NetscapeExporter
+    public class NetscapeExporter : IBookmarkExporter
     {
         private BookstoreService _service;
+
+        public string ContentType => "text/html";
+        public string FileName => $"bookmarks_{DateTime.Now:yyyy-MM-d}.html";
         public NetscapeExporter(BookstoreService service)
         {
             _service = service;

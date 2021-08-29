@@ -1,15 +1,12 @@
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using BookmarksManager;
 using Bookstore.Models;
 using Bookstore.Utilities;
+using CsvHelper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Net.Http.Headers;
+using Microsoft.AspNetCore.Routing;
 
 namespace Bookstore.Controllers
 {
@@ -44,16 +41,45 @@ namespace Bookstore.Controllers
         }
         
         // GET
-        public IActionResult Account()
+        [HttpGet]
+        public IActionResult Account([FromQuery] string? error, [FromQuery] string? message)
         {
+            ViewData["User"] = _bookstore.User;
+            ViewData["Error"] = error;
+            ViewData["Message"] = message;
             return View();
         }
         
-        [HttpGet]
-        public IActionResult Settings()
+        [HttpPost]
+        public IActionResult Account([FromForm] UpdateUserDto update, [FromForm(Name = "current-password")] string currentPassword)
         {
-            ViewData["Settings"] = _bookstore.GetUserSettings() ?? new Settings();
-            return View();
+            RouteValueDictionary routeValues = new();
+                
+            if (!_bookstore.ValidateUserPassword(currentPassword))
+            {
+                routeValues["Error"] = @"""Current password"" does not match password on account";
+            }
+            else if (update.Password != update.ConfirmPassword)
+            {
+                routeValues["Error"] = @"""New Password"" and ""Confirm New Password"" do not match";
+            }
+            else
+            {
+                routeValues["Message"] = "Password and username successfully updated";
+                _bookstore.UpdateSelfCredentials(update.UserName, update.Password);
+                _context.SaveChanges();
+            }
+            
+            return RedirectToAction("Account", "User", routeValues);
+        }
+        
+        [HttpGet]
+        public IActionResult Settings([FromQuery] string? message, [FromQuery] string? error)
+        {
+            ViewData["Settings"] = _bookstore.GetUserSettings();
+            ViewData["Error"] = error;
+            ViewData["Message"] = message;
+            return View("Settings");
         }
         
         [HttpPost]
@@ -69,66 +95,48 @@ namespace Bookstore.Controllers
         [HttpPost]
         public IActionResult PortBookmarks(PortAction action, [FromForm] PortFileFormat format, [FromForm] IFormFile? content = null)
         {
-            return action switch
+            return (action, format) switch
             {
-                PortAction.Export => ExportBookmarks(format),
-                PortAction.Import => ImportBookmarks(format, content),
+                (PortAction.Export, PortFileFormat.Netscape) => ExportBookmarks(new NetscapeExporter(_bookstore)),
+                (PortAction.Export, PortFileFormat.CSV) =>      ExportBookmarks(new CsvExporter(_bookstore)),
+                (PortAction.Import, PortFileFormat.Netscape) => ImportBookmarks(content, new NetscapeImporter(_bookstore)),
+                (PortAction.Import, PortFileFormat.CSV)      => ImportBookmarks(content, new CsvImporter(_bookstore)),
                 _ => throw new ArgumentException("Invalid settings action code: " + action)
             };
         }
         
-        private IActionResult ExportBookmarks(PortFileFormat format)
+        private IActionResult ExportBookmarks(IBookmarkExporter exporter)
         {
             ContentResult result = new();
-            
-            if (format == PortFileFormat.Netscape)
-            {
-                var exporter = new NetscapeExporter(_bookstore);
-                result.Content = exporter.Export();
-                result.ContentType = "text/html";
-                Response.Headers.Add("Content-Disposition", $"attachment; filename=\"bookmarks_{DateTime.Now:yyyy-MM-d}.html\"");
-            }
-            else if (format == PortFileFormat.CSV)
-            {
-                var exporter = new CsvExporter(_bookstore);
-                result.Content = exporter.Export();
-                result.ContentType = "text/csv";
-                Response.Headers.Add("Content-Disposition", $"attachment; filename=\"BookstoreExport_{DateTime.Now:yyyy-MM-d}.csv\"");
-            }
-            else
-            {
-                throw new ArgumentException("Invalid Format: " + format);
-            }
-
+            result.Content = exporter.Export();
+            result.ContentType = exporter.ContentType;
+            Response.Headers.Add("Content-Disposition", $"attachment; filename=\"{exporter.FileName}\"");
             return result;
         }
         
-        private IActionResult ImportBookmarks([FromForm] PortFileFormat format, [FromForm] IFormFile? content)
+        private IActionResult ImportBookmarks(IFormFile? content, IBookmarkImporter importer)
         {
+            var routeValues = new RouteValueDictionary();
             if (content == null)
-                throw new ArgumentException("No file uploaded!");
-            
-            // TODO: Handle case where file upload is null (treat as empty string?)
-            using var stream = content.OpenReadStream();
+            {
+                routeValues["Error"] = "Upload file missing, no bookmarks imported";
+                return RedirectToAction(nameof(Settings), routeValues);
+            }
 
-            if (format == PortFileFormat.Netscape)
+            try
             {
-                var importer = new NetscapeImporter(_bookstore);
-                importer.Import(stream);
+                using var stream = content.OpenReadStream();
+                int count = importer.Import(stream);
+                _context.SaveChanges();
+                routeValues["Message"] = $"Successfully imported {count} bookmarks";
             }
-            else if (format == PortFileFormat.CSV)
+            catch (Exception e)
             {
-                var importer = new CsvImporter(_bookstore);
-                importer.Import(stream);
-            }
-            else
-            {
-                throw new ArgumentException("Invalid Format: " + format);
+                string message = e is CsvHelperException ? "CSV file is incorrectly formatted" : e.Message;
+                routeValues["Error"] = $"Import process encountered an error: {message}";
             }
             
-            _context.SaveChanges();
-            
-            return RedirectToAction(nameof(Settings));
+            return RedirectToAction(nameof(Settings), routeValues);
         }
     }
 }

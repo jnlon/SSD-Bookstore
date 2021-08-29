@@ -46,10 +46,9 @@ namespace Bookstore.Controllers
                         new(BookstoreClaims.Role, user.Admin ? BookstoreRoles.Admin : BookstoreRoles.Member)
                     };
 
-                    // create cookie and add it to current response
+                    // Create cookie and add it to current response
                     await HttpContext.SignInAsync(new ClaimsPrincipal(new ClaimsIdentity(claims, "Cookies", "user", "role")));
                     
-                    // TODO: If admin, redirect to admin, if user, redirect to user home
                     return Redirect("/");
                 }
             }

@@ -10,9 +10,11 @@ using CsvHelper;
 
 namespace Bookstore.Utilities
 {
-    public class CsvExporter
+    public class CsvExporter : IBookmarkExporter
     {
         private BookstoreService _service;
+        public string ContentType => "text/csv";
+        public string FileName => $"BookstoreExport_{DateTime.Now:yyyy-MM-d}.csv";
         
         public CsvExporter(BookstoreService service)
         {

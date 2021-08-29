@@ -168,7 +168,7 @@
                                 <a href="?search=folders(@folder.ToMenuString())" class="bookstore-table-folder">@folder.Name</a>
                                 @if (folder.Id != bookmarkFolders.Last().Id)
                                 {
-                                    <span>&gt;</span>
+                                    <span>@Folder.Seperator</span>
                                 }
                             }
                         </td> 

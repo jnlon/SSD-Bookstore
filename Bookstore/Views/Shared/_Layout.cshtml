@@ -1,6 +1,4 @@
 ﻿@using Bookstore.Utilities
-@using System.Net.Http
-@using Bookstore.Constants.Authorization
 @{
     string controller = ViewContext.RouteData.Values["Controller"] as string;
     string action = ViewContext.RouteData.Values["Action"] as string;
@@ -47,6 +45,16 @@
 </header>
 
 <main>
+    @if (ViewData["Error"] is not null)
+    {
+        <div class="alert alert-danger" role="alert">@ViewData["Error"]</div>
+    }
+
+    @if (ViewData["Message"] is not null)
+    {
+        <div class="alert alert-success" role="alert">@ViewData["Message"]</div>
+    }
+    
     @RenderBody()
 </main>
 

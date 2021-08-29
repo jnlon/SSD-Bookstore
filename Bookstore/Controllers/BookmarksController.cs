@@ -8,6 +8,7 @@ using Bookstore.Models.View;
 using Bookstore.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 
 namespace Bookstore.Controllers
@@ -27,8 +28,11 @@ namespace Bookstore.Controllers
         }
         
         [HttpGet]
-        public IActionResult Create()
+        public IActionResult Create([FromQuery] string  message, [FromQuery] string error)
         {
+            ViewData["Settings"] = _bookstore.GetUserSettings();
+            ViewData["Message"] = message;
+            ViewData["Error"] = error;
             return View();
         }
 
@@ -51,14 +55,38 @@ namespace Bookstore.Controllers
         }
         
         [HttpPost]
-        public IActionResult LoadAndEdit(Uri url)
+        public IActionResult Save([FromForm(Name = "url")] string? urlString, [FromForm(Name = "archive-bookmark")] bool archiveBookmark, [FromQuery] bool editRedirect)
         {
+            var routeValues = new RouteValueDictionary();
+            
+            if (string.IsNullOrWhiteSpace(urlString))
+            {
+                routeValues["Error"] = "Bookmark URL cannot be empty";
+                return RedirectToAction("Create", "Bookmarks", routeValues);
+            }
+            
+            if (!urlString.StartsWith("http://") && !urlString.StartsWith("https://"))
+            {
+                routeValues["Error"] = "Bookmark URL must start with http:// or https://";
+                return RedirectToAction("Create", "Bookmarks", routeValues);
+            }
+
+            var url = new Uri(urlString);
+            bool bookmarkExists = _bookstore.QueryAllUserBookmarks().Any(bm => bm.Url == url);
+
+            if (bookmarkExists)
+            {
+                routeValues["Error"] = $@"Bookmark with URL ""{urlString}"" already exists";
+                return RedirectToAction("Create", "Bookmarks", routeValues);
+            }
+                
             var load = BookmarkLoader.Create(url, _httpClientFactory.CreateClient());
             
             _context.Bookmarks.Add(new Bookmark()
             {
                 Archive = null, // TODO: Get based on form setting if this is enabled?
                 UserId = _bookstore.User.Id,
+                User = _bookstore.User,
                 Created = DateTime.Now,
                 Modified = DateTime.Now,
                 Favicon = load.Favicon,
@@ -66,25 +94,23 @@ namespace Bookstore.Controllers
                 Folder = null,
                 Tags = new HashSet<Tag>(),
                 Title = load.Title,
-                Url = url
+                Url = url,
+                ArchiveId = null,
+                FolderId = null
             });
 
             _context.SaveChanges();
-            
-            // Now get the max bookmark ID for this user so we can fetch the URL
 
-            var bookmark = _bookstore
-                .QueryAllUserBookmarks() //user.Bookmarks
-                .OrderByDescending(b => b.Id)
-                .First();
-
-            return RedirectToAction(nameof(Edit), "Bookmarks", new { ids = new long[]{bookmark.Id} });
-        }
-        
-        [HttpPost]
-        public string Save(string url)
-        {
-            return $"save url: {url}";
+            if (editRedirect)
+            {
+                // Now get the max bookmark ID for this user so we can fetch the URL
+                routeValues["ids"] = _bookstore.QueryAllUserBookmarks().OrderByDescending(b => b.Id).First().Id;
+                return RedirectToAction(nameof(Edit), "Bookmarks", routeValues);
+            }
+            else
+            {
+                return RedirectToAction(nameof(Index), "Bookstore");
+            }
         }
         
         [HttpGet]

@@ -40,6 +40,11 @@ namespace Bookstore.Utilities
                 .Include(bm => bm.User)
                 .Where(bm => bm.UserId == _user.Id);
         }
+
+        public bool ValidateUserPassword(string password)
+        {
+            return Crypto.PasswordHashMatches(password, _user.PasswordHash, _user.PasswordSalt);
+        }
         
         public IQueryable<Bookmark> QueryUserBookmarksByIds(long[] ids)
         {
@@ -195,6 +200,11 @@ namespace Bookstore.Utilities
                 DefaultPaginationLimit = defaultPaginationLimit
             };
         }
+        
+        public void UpdateSelfCredentials(string username, string password)
+        {
+            UpdateUserCredentials(User, username, password);
+        }
 
         public void UpdateUserCredentials(long id, string username, string password)
         {
@@ -203,6 +213,11 @@ namespace Bookstore.Utilities
             if (user == null)
                 throw new ArgumentException($"User with ID {id} does not exist");
             
+            UpdateUserCredentials(user, username, password);
+        }
+        
+        private void UpdateUserCredentials(User user, string username, string password)
+        {
             var (passwordHash, passwordSalt) = Crypto.GeneratePasswordHash(password);
             user.Username = username;
             user.PasswordHash = passwordHash;

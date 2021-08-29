@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Bookstore.Controllers
 {
-
     public class UpdateUserDto
     {
        [FromForm(Name = "id")]
