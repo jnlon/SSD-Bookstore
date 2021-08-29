@@ -162,12 +162,12 @@ namespace Bookstore.Migrations
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "Id", "Admin", "PasswordHash", "PasswordSalt", "Username" },
-                values: new object[] { 1L, true, "4cdlmylvrth3bUZzN9H9CoqksEX7cI3O6psaPO19hgY=", "O7luc9THuhvDLLHlh/0Wkw==", "admin" });
+                values: new object[] { 1L, true, "3JVdPcaDGDmMkGgEs9sTxZeXz4bYBItuD5AaffFQWMM=", "evNkbyJyGkzS8TbMtYtGaA==", "admin" });
 
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "Id", "Admin", "PasswordHash", "PasswordSalt", "Username" },
-                values: new object[] { 2L, false, "4cdlmylvrth3bUZzN9H9CoqksEX7cI3O6psaPO19hgY=", "O7luc9THuhvDLLHlh/0Wkw==", "toast" });
+                values: new object[] { 2L, false, "FBvEEGGvbpBxSHLCtWdNn+UiZz6wIf4p+XeEUU9v1lI=", "9vqnI/oT4vm5ZlER7Tn2dg==", "toast" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Bookmarks_ArchiveId",

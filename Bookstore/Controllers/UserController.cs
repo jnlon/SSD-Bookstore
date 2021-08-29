@@ -127,6 +127,7 @@ namespace Bookstore.Controllers
             {
                 using var stream = content.OpenReadStream();
                 int count = importer.Import(stream);
+                _bookstore.CleanupBookmarkOrphans();
                 _context.SaveChanges();
                 routeValues["Message"] = $"Successfully imported {count} bookmarks";
             }

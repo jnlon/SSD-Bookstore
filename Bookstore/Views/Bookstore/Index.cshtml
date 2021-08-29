@@ -57,6 +57,7 @@
             <div class="w-50">
                 <input id="bookstore-control-archive" type="submit" name="action" class="btn btn-primary" value="Archive">
                 <input id="bookstore-control-edit" type="submit" name="action" class="btn btn-primary" value="Edit">
+                <input id="bookstore-control-refresh" type="submit" name="action" class="btn btn-primary" value="Refresh">
                 <input id="bookstore-control-delete" type="submit" name="action" class="btn btn-danger" value="Delete">
                 <button id="bookstore-control-select-all" type="button"  class="btn btn-success">Select All</button>
             </div>
@@ -117,7 +118,7 @@
             <thead>
             <tr style="white-space: nowrap">
                 <th class="text-center">Select</th>
-                <th class="text-center">
+                <th>
                     <a
                         title="Sort by Folder"
                         asp-controller="Bookstore"
@@ -134,14 +135,14 @@
                         Bookmark &#x296E;
                     </a>
                 </th>
-                <th class="text-center">
+                <th>
                     <a
                         title="Sort by Tag"
                         href="?search=sort(tag, @(search.SortField == SearchQueryField.Tag && !search.SortDescending ? "desc" : "asc"))">
                         Tags &#x296E;
                     </a>
                 </th>
-                <th class="text-center">
+                <th>
                     <a
                         title="Sort by Archive Status"
                         href="?search=sort(archived, @(search.SortField == SearchQueryField.Archived && !search.SortDescending ? "desc" : "asc"))">
@@ -158,7 +159,7 @@
                         <td class="text-center align-middle">
                             <input type="checkbox" class="form-check mx-auto" style="height: 1.5em; width: 1.5em;" name="selected" value="@bookmark.Id" id="@bookmark.Id">
                         </td>
-                        <td class="text-center align-middle">
+                        <td class="align-middle">
                             @if (bookmarkFolders.Length == 0)
                             {
                                 <span>No Folder</span>
@@ -179,17 +180,27 @@
                             }
                             <a href="@bookmark.Url" class="bookstore-table-link" title="@bookmark.Title">@TruncateTitle(bookmark.Title)</a>
                         </td>
-                        <td class="text-center align-middle">
-                            @{ var sortedBookmarkTags = bookmark.Tags?.OrderBy(t => t.Name).ToList() ?? new List<Tag>();}
-                            @foreach (var tag in sortedBookmarkTags)
+                        <td class="align-middle">
+                            @if (bookmark.Tags.Count > 0)
                             {
-                                <a class="bookstore-table-tag" href="?search=tag(@tag.Name)">@tag.Name</a><span>@(tag != sortedBookmarkTags.Last() ? "," : "")</span>
+                                @foreach (var tag in bookmark.Tags)
+                                {
+                                    <a class="bookstore-table-tag" href="?search=tag(@tag.Name)">@tag.Name</a><span>@(tag != bookmark.Tags.Last() ? "," : "")</span>
+                                }
+                            }
+                            else
+                            {
+                                <small class="text-muted">No Tags</small>
                             }
                         </td>
-                        <td class="text-center align-middle">
+                        <td class="align-middle">
                             @if (bookmark.ArchiveId != null) 
                             {
                                 <a asp-controller="Bookmarks" asp-action="Archive" asp-route-id="@bookmark.Id">View</a>
+                            }
+                            else
+                            {
+                                <small class="text-muted">No Archive</small>
                             }
                         </td>
                     </tr>

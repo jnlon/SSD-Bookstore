@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Bookstore.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Bookstore.Utilities
 {
@@ -34,16 +35,14 @@ namespace Bookstore.Utilities
         {
             Func<Bookmark, IComparable> orderby = Search.SortField switch
             {
-                SearchQueryField.Archived => bm => bm.Archive == null,
+                SearchQueryField.Archived => bm => bm.ArchiveId == null,
                 SearchQueryField.Folder => bm => bm.Folder?.ToMenuString() ?? string.Empty,
                 SearchQueryField.Tag => bm => string.Join(",", bm.Tags.ToList().OrderBy(tag => tag.Name)),
                 SearchQueryField.Title => bm => bm.Title,
                 SearchQueryField.Url => bm => bm.Url.ToString()
             };
 
-            //List<Bookmark> allBookmarks = bookstore.QueryAllUserBookmarks().ToList();
-            var allBookmarks = bookstore.QueryAllUserBookmarks();
-            
+            Bookmark[] allBookmarks = bookstore.QueryAllUserBookmarks().ToArray();
             IEnumerable<Bookmark> query = allBookmarks.Where(Search.PassesAllFilters);
 
             // Apply sort on selected field

@@ -72,7 +72,7 @@ namespace Bookstore.Utilities
             return normalizedText;
         }
 
-        private string CleanupDocument(HtmlDocument document)
+        private byte[] CleanupDocument(HtmlDocument document)
         {
             void RemoveNode(HtmlNode n)
             {
@@ -106,7 +106,11 @@ namespace Bookstore.Utilities
             
             ForAllNodes("//*[@style]", n => n.Attributes["style"].Remove());
 
-            return document.DocumentNode.OuterHtml;
+            using (var mem = new MemoryStream())
+            {
+                document.Save(mem, Encoding.UTF8);
+                return mem.ToArray();
+            };
         }
 
         public async Task Archive(Bookmark bookmark)
@@ -133,9 +137,9 @@ namespace Bookstore.Utilities
                 HtmlDocument document = new();
                 document.Load(new MemoryStream(raw));
                 plainText = PlainTextFromHtml(document);
-                cleanHtml = Encoding.ASCII.GetBytes(CleanupDocument(document));
+                cleanHtml = CleanupDocument(document);
             }
-            
+
             bookmark.Archive = new Archive
             {
                 UserId = bookmark.UserId,

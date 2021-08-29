@@ -34,8 +34,12 @@ namespace Bookstore.Utilities
 
         public IQueryable<Bookmark> QueryAllUserBookmarks()
         {
+            // Load user folders into context memory, so folders whose parents have no bookmarks are still included
+            _context.Folders.Where(f => f.UserId == _user.Id).Load();
+
             return _context.Bookmarks
-                .Include(bm => bm.Folder)
+                .AsSplitQuery()
+                .Include(bm => bm.Folder).ThenInclude(f => f.Parent)
                 .Include(bm => bm.Tags)
                 .Include(bm => bm.User)
                 .Where(bm => bm.UserId == _user.Id);
@@ -233,7 +237,7 @@ namespace Bookstore.Utilities
         
         public Folder CreateFolder(string folderName, Folder? parent)
         {
-            var folder = new Folder { Name = folderName, Parent = parent, UserId = _user.Id};
+            var folder = new Folder { Bookmarks = new(), Name = folderName, Parent = parent, UserId = _user.Id};
             _context.Folders.Add(folder);
             return folder;
         }
@@ -280,8 +284,22 @@ namespace Bookstore.Utilities
                 .Select(ent => ent.Entity)
                 .ToList();
             
+            var foldersToAdd = _context.ChangeTracker
+                .Entries<Folder>()
+                .Where(e => e.State == EntityState.Added)
+                .Select(ent => ent.Entity)
+                .ToList();
+
+            // var tagsToAdd = _context.ChangeTracker
+            //     .Entries<Tag>()
+            //     .Where(e => e.State == EntityState.Added)
+            //     .Select(ent => ent.Entity)
+            //     .ToList();
+
             var allFolders = QueryAllUserFolders()
                 .Include(f => f.Bookmarks)
+                .ToList()
+                .Concat(foldersToAdd)
                 .ToList();
             
             // 2 conditions must be met before we attempt deleting the folder:
@@ -290,10 +308,11 @@ namespace Bookstore.Utilities
             
             bool CanDeleteFolder(Folder folder)
             {
+                // All the bookmarks in this folder are going to be deleted
                 bool isEmptyFolder = folder
                     .Bookmarks
                     .All(bm => bookmarksToDelete.Any(tdl => tdl.Id == bm.Id));
-
+                
                 return isEmptyFolder &&
                        allFolders.Where(f => f.ParentId == folder.Id).All(CanDeleteFolder);
             }
@@ -313,8 +332,9 @@ namespace Bookstore.Utilities
             var tagsToDelete = QueryAllUserTags()
                 .Include(tag => tag.Bookmarks)
                 .ToList()
-                .Where(tag => tag.Bookmarks.All(bm => bookmarksToDelete.Any(e => e.Id == bm.Id)))
-                .ToList();
+                .Where(tag =>
+                    tag.Bookmarks.All(bm => bookmarksToDelete.Any(e => e.Id == bm.Id))
+                ).ToList();
             
             _context.Folders.RemoveRange(foldersToDelete);
             _context.Tags.RemoveRange(tagsToDelete);

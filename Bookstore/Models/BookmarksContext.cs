@@ -1,13 +1,9 @@
-using System.Linq;
-using System.Security.Claims;
-using Bookstore.Constants.Authorization;
 using Bookstore.Utilities;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-
-// Bookstore.Models.BookmarksContext
 
 namespace Bookstore.Models
 {
@@ -23,19 +19,23 @@ namespace Bookstore.Models
         {
         }
 
-        private void InsertDevelopmentData(ModelBuilder builder)
-        {
-            var (passwordHash, passwordSalt) = Crypto.GeneratePasswordHash("123");
-            var adminUser = new User() {Id = 1, Admin = true, Username = "admin", PasswordHash = passwordHash, PasswordSalt = passwordSalt};
-            var standardUser = new User() {Id = 2, Admin = false, Username = "toast", PasswordHash = passwordHash, PasswordSalt = passwordSalt};
-            
-            builder.Entity<User>().HasData(adminUser);
-            builder.Entity<User>().HasData(standardUser);
 
-            // builder.Entity<Folder>().HasData(new Folder() { Id = 1, Name = "Bun", ParentId = null, UserId = standardUser.Id });
-            // builder.Entity<Folder>().HasData(new Folder() { Id = 2, Name = "Cheese", ParentId = 1, UserId = standardUser.Id });
-            // builder.Entity<Folder>().HasData(new Folder() { Id = 3, Name = "Meat", ParentId = 2, UserId = standardUser.Id });
-            // builder.Entity<Folder>().HasData(new Folder() { Id = 4, Name = "Other Bookmarks", ParentId = null, UserId = standardUser.Id });
+        private void InsertProductionData(ModelBuilder builder, IConfiguration config)
+        {
+            var (passwordHash, passwordSalt) = Crypto.GeneratePasswordHash(config["Bookstore:DefaultPassword"]);
+            var adminUser = new User() {Id = 1, Admin = true, Username = "admin", PasswordHash = passwordHash, PasswordSalt = passwordSalt};
+            builder.Entity<User>().HasData(adminUser);
+        }
+
+        private void InsertDevelopmentData(ModelBuilder builder, IConfiguration config)
+        {
+            var (passwordHash, passwordSalt) = Crypto.GeneratePasswordHash(config["Bookstore:DefaultPassword"]);
+            var adminUser = new User {Id = 1, Admin = true, Username = "admin", PasswordHash = passwordHash, PasswordSalt = passwordSalt};
+            builder.Entity<User>().HasData(adminUser);
+            
+            (passwordHash, passwordSalt) = Crypto.GeneratePasswordHash(config["Bookstore:DefaultPassword"]);
+            var standardUser = new User {Id = 2, Admin = false, Username = "toast", PasswordHash = passwordHash, PasswordSalt = passwordSalt};
+            builder.Entity<User>().HasData(standardUser);
         }
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -44,10 +44,16 @@ namespace Bookstore.Models
                 .HasIndex(u => u.Username)
                 .IsUnique();
 
-            var env = this.GetService<IWebHostEnvironment>();
+            IWebHostEnvironment env = this.GetService<IWebHostEnvironment>();
+            IConfiguration config = this.GetService<IConfiguration>();
             if (env.IsDevelopment())
             {
-                InsertDevelopmentData(builder);
+                InsertDevelopmentData(builder, config);
+            }
+
+            if (env.IsProduction())
+            {
+                InsertProductionData(builder, config);
             }
         }
     }

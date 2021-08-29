@@ -32,7 +32,19 @@ namespace Bookstore.Utilities
             public string? ContentType => _response?.Content.Headers.ContentType?.ToString();
             public bool IsImageMime => ContentType?.ToLower().Contains("image") ?? false;
             public bool IsHtmlMime => ContentType?.ToLower().Contains("html") ?? false;
-            public byte[]? ReadContent(uint limitBytes) => _response.Content.ReadAsByteArrayLimited(limitBytes);
+
+            public Stream? ReadAsStream(uint limitBytes)
+            {
+                if (_response.Content.Headers.ContentLength < limitBytes)
+                    return _response.Content.ReadAsStream();
+                
+                return null;
+            }
+
+            public byte[]? ReadAsBytes(uint limitBytes)
+            {
+                return _response.Content.ReadAsByteArrayLimited(limitBytes);
+            }
         }
 
         private class Html
@@ -41,11 +53,11 @@ namespace Bookstore.Utilities
             public Uri? IconUri { get; }
             private readonly Uri _source;
             private readonly HtmlDocument _doc;
-            public Html(byte[]? content, Uri source)
+            public Html(Stream? content, Uri source)
             {
                 _source = source;
                 _doc = new HtmlDocument();
-                _doc.Load(new MemoryStream(content ?? new byte[0]));
+                _doc.Load(content ?? new MemoryStream());
                 IconUri = FindIconUri();
                 Title = _doc.DocumentNode.SelectSingleNode("//head/title")?.InnerText;
             }
@@ -80,7 +92,7 @@ namespace Bookstore.Utilities
             // Download the bookmark. If it was successful, and was an HTML file, load HTMLHelper
             var htmlDownload = new Download(client, bookmarkUrl);
             if (htmlDownload.Success && htmlDownload.IsHtmlMime)
-                html = new Html(htmlDownload.ReadContent(MaxDownloadSize), bookmarkUrl);
+                html = new Html(htmlDownload.ReadAsStream(MaxDownloadSize), bookmarkUrl);
             
             // Retrieve favicon from the HTMl, or fall back to standard location
             var faviconUrl = html?.IconUri ?? new UriBuilder(bookmarkUrl) { Path = "/favicon.ico" }.Uri;
@@ -90,15 +102,17 @@ namespace Bookstore.Utilities
             // If the favicon download was successful, and it is an image
             if (faviconDownload.Success && faviconDownload.IsImageMime)
             {
-                favicon = faviconDownload.ReadContent(MaxDownloadSize);
+                favicon = faviconDownload.ReadAsBytes(MaxDownloadSize);
                 faviconMimeType = faviconDownload.ContentType;
             }
+
+            string title = html?.Title == null ? bookmarkUrl.ToString() : WebUtility.HtmlDecode(html.Title);
             
             return new BookmarkLoader()
             {
                 FaviconMimeType = faviconMimeType,
                 Favicon = favicon,
-                Title = html?.Title ?? bookmarkUrl.ToString()
+                Title = title
             };
         }
     }

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Net.Http;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Bookstore.Models;
@@ -55,6 +57,21 @@ namespace Bookstore.Controllers
             {
                 return RedirectToAction("Edit", "Bookmarks",new RouteValueDictionary() {{"ids", selected}});
             } 
+            else if (action == "Refresh")
+            {
+                var bookmarksToRefresh = _bookstore.QueryUserBookmarksByIds(selected);
+
+                Parallel.ForEach(bookmarksToRefresh, bm =>
+                    {
+                        var loader = BookmarkLoader.Create(bm.Url, new HttpClient());
+                        bm.Favicon = loader.Favicon;
+                        bm.FaviconMime = loader.FaviconMimeType;
+                        bm.Title = loader.Title;
+                    }
+                );
+                
+                _context.SaveChanges();
+            }
             else if (action == "Delete")
             {
                 var bookmarksToDelete = _bookstore.QueryUserBookmarksByIds(selected);

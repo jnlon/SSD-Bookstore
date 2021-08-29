@@ -2,14 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using Bookstore.Controllers.Helpers;
 using Bookstore.Models;
 using Bookstore.Models.View;
 using Bookstore.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.EntityFrameworkCore;
 
 namespace Bookstore.Controllers
 {
@@ -133,12 +131,12 @@ namespace Bookstore.Controllers
             public string Title { get; set; }
             public string? Tags { get; set; }
             public long? Folder { get; set; }
-            public string? NewFolder { get; set; } // Only if user chooses to create a new folder
+            public string? CustomFolder { get; set; } // Only if user chooses to create a new folder
         }
         
-        private void EditBookmark(long id, BookmarkEditDto upload, TagHelper th, Folder? folder, bool singleEdit)
+        private void EditBookmark(long id, BookmarkEditDto upload, BookstoreResolver resolver, Folder? folder, bool singleEdit)
         {
-            Bookmark? bookmark = _bookstore.GetSingleBookmarkById(id); // .First(b => b.Id == id);
+            Bookmark? bookmark = _bookstore.GetSingleBookmarkById(id);
 
             if (bookmark == null)
                 throw new ArgumentException($"Unable to find bookmark with ID = {id}");
@@ -152,12 +150,13 @@ namespace Bookstore.Controllers
                 bookmark.Url = bookmark.Url;
             }
             
+            HashSet<string> tagNames = upload.Tags
+                ?.Split(",")
+                .Select(t => t.Trim().ToLower())
+                .ToHashSet() ?? new HashSet<string>();
+
             // Clear previous tags
-            bookmark.Tags.Clear();
-            
-            // Add tags from upload to bookmark entity, re-using tags on users account if they exist
-            foreach (string tagName in th.ParseTagList(upload.Tags ?? string.Empty))
-                bookmark.Tags.Add(th.GetOrCreateNewTag(tagName));
+            bookmark.Tags = resolver.ResolveTags(tagNames);
         }
 
         [HttpGet]
@@ -184,29 +183,30 @@ namespace Bookstore.Controllers
             bool singleEdit = id.Length == 1;
             try
             {
-                var fh = new FolderHelper(_bookstore, _context);
-                var th = new TagHelper(_bookstore, _context);
-                
-                if (!fh.ValidFolder(upload.Folder))
-                    throw new ArgumentException($"Folder with ID {id} does not exist");
-
-                // By default, set selected folder as this bookmarks folder
-                Folder? folder = null;
-                if (upload.Folder.HasValue)
+                if (upload.Folder is not null && !_bookstore.QueryAllUserFolders().Any(f => f.Id == upload.Folder))
                 {
-                    folder = fh.GetFolder((long)upload.Folder);
+                    throw new ArgumentException($"Folder with ID {upload.Folder} does not exist");
                 }
-                
-                // If a "new folder" string was given, treat the "Folder" drop-down selected item as the parent
-                if (upload.NewFolder is not null)
+
+                BookstoreResolver resolver = new(_bookstore);
+                Folder? folder = null;
+                if (!string.IsNullOrWhiteSpace(upload.CustomFolder))
                 {
-                    Folder? parent = folder;
-                    folder = fh.CreateFolder(upload.NewFolder, parent);
+                    string[] folderText = upload.CustomFolder.Trim('/').Split('/');
+                    folder = resolver.ResolveFolder(folderText);
+                }
+                else
+                {
+                    // By default, set selected folder as this bookmarks folder
+                    if (upload.Folder.HasValue)
+                    {
+                        folder = _bookstore.QueryAllUserFolders().FirstOrDefault(f => f.Id == (long)upload.Folder);
+                    }
                 }
                 
                 foreach (long bookmarkId in id)
                 {
-                    EditBookmark(bookmarkId, upload, th, folder, singleEdit);
+                    EditBookmark(bookmarkId, upload, resolver, folder, singleEdit);
                 }
             }
             catch (Exception e)

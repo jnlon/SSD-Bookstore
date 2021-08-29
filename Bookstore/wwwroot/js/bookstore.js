@@ -23,7 +23,7 @@ $.fn.any = function(predicate){
 
 $(document).ready(function() {
     // Disable control buttons when unchecked
-    var enableOnCheckControls = $('#bookstore-control-archive, #bookstore-control-delete, #bookstore-control-edit');
+    var enableOnCheckControls = $('#bookstore-control-archive, #bookstore-control-delete, #bookstore-control-edit, #bookstore-control-refresh');
     var refreshControls = function() {
         var anyChecked = $('#bookstore-table-body input[type="checkbox"]').any((i, e) =>  e.checked);
         enableOnCheckControls.prop('disabled', !anyChecked);
