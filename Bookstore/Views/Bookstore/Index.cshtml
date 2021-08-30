@@ -45,9 +45,25 @@
         </form>
     </div>
 
+<div class="d-flex justify-content-between">
     <div class="mb-2" >
         Showing @searchResult.QueriedBookmarks of @searchResult.TotalQueriedBookmarks bookmarks (@searchResult.TotalBookmarks total).
     </div>
+    <details>
+        <summary>Query Reference</summary>
+        <small>
+            <div>foobar - Query bookmarks where title, url, folder path, or tag contains "foobar"</div>
+            <div>url(www.) - Query bookmarks where url contains "www."</div>
+            <div>title(baz) - Query bookmarks where title contains "baz"</div>
+            <div>intext(quux) - Query archived bookmarks where text contains "quux"</div>
+            <div>folder(dir1/dir2) - Query bookmarks in folder "dir1/dir2"</div>
+            <div>folders(dir1/dir2) - Recursively query bookmarks under "dir1/dir2", including subfolders</div>
+            <div>tag(tag1, tag2) - Query bookmarks having both tags "tag1" and "tag2"</div>
+            <div>tag(tag1) tag(tag2) - Query bookmarks having either tags "tag1" or "tag2"</div>
+            <div>archived(true) - Query bookmarks that have been archived (opposite with "false")</div>
+        </small>
+    </details>
+</div>
 
     <form method="post">
         <!-- Table Controls -->

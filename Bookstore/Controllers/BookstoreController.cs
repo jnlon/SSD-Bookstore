@@ -30,11 +30,11 @@ namespace Bookstore.Controllers
         {
             page = Math.Max(1, page);
             Settings settings =_bookstore.GetUserSettings();
-            // if (HttpContext.Request.Query.Keys.Count == 0 && settings?.DefaultQuery != null)
-            // {
-            //     var qparams = new RouteValueDictionary() { { "search", settings?.DefaultQuery } };
-            //     return RedirectToAction(nameof(Index), "Bookstore", qparams);
-            // }
+            if (HttpContext.Request.Query.Keys.Count == 0 && !string.IsNullOrWhiteSpace(settings.DefaultQuery))
+            {
+                var routeValues = new RouteValueDictionary { { "search", settings.DefaultQuery } };
+                return RedirectToAction(nameof(Index), "Bookstore", routeValues);
+            }
             SearchQuery searchQuery = new(search, _bookstore);
             SearchQueryResult searchResult = new(searchQuery, page, settings.DefaultPaginationLimit);
             searchResult.Execute(_bookstore);

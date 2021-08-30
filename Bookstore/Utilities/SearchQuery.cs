@@ -57,7 +57,7 @@ namespace Bookstore.Utilities
         private readonly IReadOnlyList<SearchQueryFunction> _singleFolderFilter;
         private readonly IReadOnlyList<SearchQueryFunction> _recursiveFoldersFilter; // like folder but recursive
         private readonly IReadOnlyList<SearchQueryFunction> _urlFilter;
-        private readonly IReadOnlyList<SearchQueryFunction> _contentFilter;
+        private readonly IReadOnlyList<SearchQueryFunction> _intextFilter;
         private readonly IReadOnlyList<SearchQueryFunction> _titleFilter;
         private readonly IReadOnlyList<SearchQueryFunction> _generalFilter;
         
@@ -67,7 +67,7 @@ namespace Bookstore.Utilities
 
             _bookstoreService = service;
             
-            _contentFilter = SearchQueryFunction.FromQuery(QueryString, "content");
+            _intextFilter = SearchQueryFunction.FromQuery(QueryString, "intext");
             _singleFolderFilter = SearchQueryFunction.FromQuery(QueryString, "folder");
             _recursiveFoldersFilter = SearchQueryFunction.FromQuery(QueryString, "folders");
             _tagFilter = SearchQueryFunction.FromQuery(QueryString, "tag");
@@ -107,7 +107,7 @@ namespace Bookstore.Utilities
             }
             
             // all tokens that don't end with '(' and aren't inside some '()'
-            var allTagRegex = new Regex(@"\s?(content|folder|folders|tag|archived|url|sort|title)\(.*?\)\s?");
+            var allTagRegex = new Regex(@"\s?(intext|folder|folders|tag|archived|url|sort|title)\(.*?\)\s?");
             string queryWithoutFunctions = allTagRegex.Replace(QueryString, " ");
             var generalFilter = Regex.Split(queryWithoutFunctions, @"\s+")
                 .Where(s => s != String.Empty)
@@ -173,9 +173,9 @@ namespace Bookstore.Utilities
            return GenericPassesFilter(PassesTitleFilterArgument, _titleFilter);
         }
 
-        private bool PassesContentFilter(Bookmark bm)
+        private bool PassesInTextFilter(Bookmark bm)
         {
-            if (_contentFilter.Count == 0)
+            if (_intextFilter.Count == 0)
                 return true;
             
             // If content filter is present, always exclude non-archived bookmarks
@@ -189,7 +189,7 @@ namespace Bookstore.Utilities
                 return false;
             
             bool PassesContentFilterArgument(string arg) => archive.PlainText.ToLower().Contains(arg.ToLower());
-            return GenericPassesFilter(PassesContentFilterArgument, _contentFilter);
+            return GenericPassesFilter(PassesContentFilterArgument, _intextFilter);
         }
 
         private bool PassesUrlFilter(Uri url)
@@ -245,7 +245,7 @@ namespace Bookstore.Utilities
                 && PassesTagFilter(bm.Tags)
                 && PassesSingleFolderFilter(bm.Folder)
                 && PassesRecursiveFolderFilter(bm.Folder)
-                && PassesContentFilter(bm);
+                && PassesInTextFilter(bm);
         }
 
         public override string ToString() => QueryString;
