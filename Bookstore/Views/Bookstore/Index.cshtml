@@ -153,6 +153,15 @@
                 </th>
                 <th>
                     <a
+                        title="Sort by Modified"
+                        asp-action="Index"
+                        asp-route-page="1"
+                        asp-route-search="sort(modified, @(search.SortField == SearchQueryField.Modified && !search.SortDescending ? "desc" : "asc"))">
+                        Modified &#x296E;
+                    </a>
+                </th>
+                <th>
+                    <a
                         title="Sort by Tag"
                         asp-action="Index"
                         asp-route-page="1"
@@ -199,6 +208,9 @@
                                 <img style="width: 1.5em; height: 1.5em;" src="~/Bookmarks/Favicon/@bookmark.Id">
                             }
                             <a href="@bookmark.Url" target="_blank" class="bookstore-table-link" title="@bookmark.Title">@TruncateTitle(bookmark.Title)</a>
+                        </td>
+                        <td class="align-middle">
+                            <span><abbr title="@bookmark.Modified.ToString("o")">@bookmark.Modified.ToString("yyyy-MM-dd HH:mm:ss")</abbr></span>
                         </td>
                         <td class="align-middle">
                             @if (bookmark.Tags.Count > 0)

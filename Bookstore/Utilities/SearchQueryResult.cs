@@ -85,21 +85,26 @@ namespace Bookstore.Utilities
             }
             
             // Apply sort on selected field
-            if (Search.SortDescending)
+            if (Search.SortField is not null)
             {
-                if (Search.SortField == SearchQueryField.Archived) query = query.OrderByDescending(bm => bm.ArchiveId == null);
-                else if (Search.SortField == SearchQueryField.Folder) query = query.OrderByDescending(bm => bm.FolderString);
-                else if (Search.SortField == SearchQueryField.Tag) query = query.OrderByDescending(bm => bm.TagString);
-                else if (Search.SortField == SearchQueryField.Title) query = query.OrderByDescending(bm => bm.Title);
-                else if (Search.SortField == SearchQueryField.Url) query = query.OrderByDescending(bm => bm.UrlString);
-            }
-            else
-            {
-                if (Search.SortField == SearchQueryField.Archived) query = query.OrderBy(bm => bm.ArchiveId == null);
-                else if (Search.SortField == SearchQueryField.Folder) query = query.OrderBy(bm => bm.FolderString);
-                else if (Search.SortField == SearchQueryField.Tag) query = query.OrderBy(bm => bm.TagString);
-                else if (Search.SortField == SearchQueryField.Title) query = query.OrderBy(bm => bm.Title);
-                else if (Search.SortField == SearchQueryField.Url) query = query.OrderBy(bm => bm.UrlString);
+                if (Search.SortDescending)
+                {
+                    if (Search.SortField == SearchQueryField.Archived) query = query.OrderByDescending(bm => bm.ArchiveId == null);
+                    else if (Search.SortField == SearchQueryField.Folder) query = query.OrderByDescending(bm => bm.FolderString);
+                    else if (Search.SortField == SearchQueryField.Tag) query = query.OrderByDescending(bm => bm.TagString);
+                    else if (Search.SortField == SearchQueryField.Title) query = query.OrderByDescending(bm => bm.Title);
+                    else if (Search.SortField == SearchQueryField.Url) query = query.OrderByDescending(bm => bm.UrlString);
+                    else if (Search.SortField == SearchQueryField.Modified) query = query.OrderByDescending(bm => bm.Modified);
+                }
+                else
+                {
+                    if (Search.SortField == SearchQueryField.Archived) query = query.OrderBy(bm => bm.ArchiveId == null);
+                    else if (Search.SortField == SearchQueryField.Folder) query = query.OrderBy(bm => bm.FolderString);
+                    else if (Search.SortField == SearchQueryField.Tag) query = query.OrderBy(bm => bm.TagString);
+                    else if (Search.SortField == SearchQueryField.Title) query = query.OrderBy(bm => bm.Title);
+                    else if (Search.SortField == SearchQueryField.Url) query = query.OrderBy(bm => bm.UrlString);
+                    else if (Search.SortField == SearchQueryField.Modified) query = query.OrderBy(bm => bm.Modified);
+                }
             }
 
             TotalQueriedBookmarks = query.Count();

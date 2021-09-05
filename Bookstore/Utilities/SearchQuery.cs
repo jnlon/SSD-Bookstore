@@ -6,7 +6,7 @@ using Bookstore.Models;
 
 namespace Bookstore.Utilities
 {
-    public enum SearchQueryField { Tag, Folder, Title, Url, Archived }
+    public enum SearchQueryField { Tag, Folder, Title, Url, Archived, Modified }
 
     public class SearchQueryFunction
     {
@@ -34,7 +34,7 @@ namespace Bookstore.Utilities
         private enum SortDirection { Asc, Desc }
         
         public readonly string QueryString;
-        public readonly SearchQueryField SortField;
+        public readonly SearchQueryField? SortField;
         public readonly bool SortDescending;
         public readonly bool? ArchivedFilter;
 

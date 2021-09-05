@@ -76,6 +76,7 @@ namespace Bookstore.Controllers
                     bookmark.Favicon = loader.Favicon;
                     bookmark.Title = loader.Title;
                     bookmark.Url = loader.FinalUrl;
+                    bookmark.Modified = DateTime.Now;
                 }
 
                 await _context.SaveChangesAsync();
