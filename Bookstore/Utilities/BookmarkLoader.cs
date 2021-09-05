@@ -113,8 +113,10 @@ namespace Bookstore.Utilities
 
         private static readonly uint MaxDownloadSize = 3 * 1000 * 1000;
 
-        public string? FaviconMimeType { get; private set; }
-        public byte[]? Favicon { get; private set; }
+        public Favicon? Favicon { get; set; }
+
+        // public string? FaviconMimeType { get; private set; }
+       // public byte[]? Favicon { get; private set; }
         public string Title { get; private set; } = string.Empty;
         public Uri FinalUrl { get; private set; } // After redirects
         public Uri OriginalUrl { get; private set; } // Before Redirects
@@ -127,8 +129,7 @@ namespace Bookstore.Utilities
             Uri originalUri = bookmarkUrl;
             byte[]? rawHtml = null;
             Html? html = null;
-            byte[]? favicon = null;
-            string? faviconMimeType = null;
+            Favicon? favicon = null;
             
             // Download the bookmark. If it was successful, and was an HTML file, load HTMLHelper
             var htmlDownload = await Download.Create(client, bookmarkUrl);
@@ -155,18 +156,21 @@ namespace Bookstore.Utilities
             // If the favicon download was successful, and it is an image
             if (faviconDownload.Success && faviconDownload.IsImageMime)
             {
-                favicon = faviconDownload.ReadAsBytes(MaxDownloadSize);
-                faviconMimeType = faviconDownload.ContentType;
+                favicon = new Favicon
+                {
+                    Data = faviconDownload.ReadAsBytes(MaxDownloadSize),
+                    Mime = faviconDownload.ContentType!,
+                    Url = faviconDownload.RequestUrl!
+                };
             }
 
             string title = html?.Title == null ? bookmarkUrl.ToString() : WebUtility.HtmlDecode(html.Title);
             
             return new BookmarkLoader
             {
-                FaviconMimeType = faviconMimeType,
-                Favicon = favicon,
                 Title = title,
                 Raw = rawHtml,
+                Favicon = favicon,
                 Response = htmlDownload.Response,
                 FinalUrl = bookmarkUrl,
                 OriginalUrl = originalUri

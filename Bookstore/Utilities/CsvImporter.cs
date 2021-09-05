@@ -31,13 +31,17 @@ namespace Bookstore.Utilities
             
             Folder? folder = null;
             HashSet<Tag> tags = new();
-            byte[]? favicon = null;
-            string? faviconMime = null;
+            Favicon? favicon = null;
 
+            
             if (!string.IsNullOrEmpty(record.FaviconBase64))
             {
-                favicon = Convert.FromBase64String(record.FaviconBase64);
-                faviconMime = record.FaviconMime;
+                favicon = new Favicon
+                {
+                    Data = Convert.FromBase64String(record.FaviconBase64),
+                    Mime = record.FaviconMime!,
+                    Url = record.FaviconUrl!,
+                };
             }
 
             if (!string.IsNullOrEmpty(record.FolderPath))
@@ -50,8 +54,9 @@ namespace Bookstore.Utilities
                 archive: null,
                 created: record.CreatedDate,
                 modified: record.ModifiedDate,
-                favicon: favicon,
-                faviconMime: faviconMime,
+                faviconData: favicon?.Data,
+                faviconMime: favicon?.Mime,
+                faviconUrl: favicon?.Url,
                 folder: folder,
                 tags: tags,
                 title: record.Title,

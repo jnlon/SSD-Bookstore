@@ -60,6 +60,7 @@ namespace Bookstore.Utilities
             return _context.Bookmarks
                 .Include(bm => bm.Tags)
                 .Include(bm => bm.Folder)
+                .Include(bm => bm.Favicon)
                 .FirstOrDefault(bm => bm.Id == id && bm.UserId == _user.Id);
         }
 
@@ -242,16 +243,26 @@ namespace Bookstore.Utilities
             return folder;
         }
 
-        public Bookmark CreateBookmark(Archive? archive, DateTime created, DateTime modified, byte[]? favicon, string? faviconMime, Folder? folder, HashSet<Tag> tags, string title, Uri url)
+        public Bookmark CreateBookmark(Archive? archive, DateTime created, DateTime modified, byte[]? faviconData, string? faviconMime, Uri? faviconUrl, Folder? folder, HashSet<Tag> tags, string title, Uri url)
         {
+            Favicon favicon = null;
+            if (faviconData != null && faviconMime != null)
+            {
+                favicon = new Favicon
+                {
+                    Data = faviconData,
+                    Mime = faviconMime,
+                    Url = faviconUrl,
+                };
+            }
+            
             var bookmark = new Bookmark
             {
                Archive = archive, 
                Created = created,
                Favicon = favicon,
-               FaviconMime = faviconMime,
                Folder = folder,
-               Modified = created,
+               Modified = modified,
                Tags = tags,
                Title = title.Trim(),
                User = _user,

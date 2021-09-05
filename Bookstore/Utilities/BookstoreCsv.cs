@@ -14,6 +14,7 @@ namespace Bookstore.Utilities
         public string? FolderPath { get; set; }
         public string? FaviconBase64 { get; set; }
         public string? FaviconMime { get; set; }
+        public Uri? FaviconUrl { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime ModifiedDate { get; set; }
 
@@ -27,8 +28,9 @@ namespace Bookstore.Utilities
                 CreatedDate = bm.Created,
                 FolderPath = bm?.Folder?.ToMenuString() ?? "",
                 ModifiedDate = bm.Modified,
-                FaviconBase64 = Convert.ToBase64String(bm.Favicon ?? new byte[]{}),
-                FaviconMime = bm.FaviconMime ?? ""
+                FaviconBase64 = Convert.ToBase64String(bm.Favicon?.Data ?? new byte[]{}),
+                FaviconMime = bm?.Favicon?.Mime,
+                FaviconUrl = bm?.Favicon?.Url
             };
         }
     }

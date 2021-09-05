@@ -26,6 +26,21 @@ namespace Bookstore.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Favicon",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Data = table.Column<byte[]>(type: "BLOB", nullable: false),
+                    Mime = table.Column<string>(type: "TEXT", nullable: false),
+                    Url = table.Column<string>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Favicon", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Folders",
                 columns: table => new
                 {
@@ -85,12 +100,14 @@ namespace Bookstore.Migrations
                     ArchiveId = table.Column<long>(type: "INTEGER", nullable: true),
                     UserId = table.Column<long>(type: "INTEGER", nullable: false),
                     FolderId = table.Column<long>(type: "INTEGER", nullable: true),
+                    FolderString = table.Column<string>(type: "TEXT", nullable: true),
+                    FaviconId = table.Column<long>(type: "INTEGER", nullable: true),
                     Created = table.Column<DateTime>(type: "TEXT", nullable: false),
                     Modified = table.Column<DateTime>(type: "TEXT", nullable: false),
                     Url = table.Column<string>(type: "TEXT", nullable: false),
+                    UrlString = table.Column<string>(type: "TEXT", nullable: true),
                     Title = table.Column<string>(type: "TEXT", nullable: false),
-                    Favicon = table.Column<byte[]>(type: "BLOB", nullable: true),
-                    FaviconMime = table.Column<string>(type: "TEXT", nullable: true)
+                    TagString = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -99,6 +116,12 @@ namespace Bookstore.Migrations
                         name: "FK_Bookmarks_Archives_ArchiveId",
                         column: x => x.ArchiveId,
                         principalTable: "Archives",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Bookmarks_Favicon_FaviconId",
+                        column: x => x.FaviconId,
+                        principalTable: "Favicon",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
@@ -162,17 +185,22 @@ namespace Bookstore.Migrations
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "Id", "Admin", "PasswordHash", "PasswordSalt", "Username" },
-                values: new object[] { 1L, true, "3JVdPcaDGDmMkGgEs9sTxZeXz4bYBItuD5AaffFQWMM=", "evNkbyJyGkzS8TbMtYtGaA==", "admin" });
+                values: new object[] { 1L, true, "mR1tQOw++zjvkMADDH1SeDh7HSdE7uip8zf+iOZyUDY=", "DrnXuVEaYByINgod99jT6Q==", "admin" });
 
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "Id", "Admin", "PasswordHash", "PasswordSalt", "Username" },
-                values: new object[] { 2L, false, "FBvEEGGvbpBxSHLCtWdNn+UiZz6wIf4p+XeEUU9v1lI=", "9vqnI/oT4vm5ZlER7Tn2dg==", "toast" });
+                values: new object[] { 2L, false, "ShI7BvM6W5m1rU4934FTgTZ994/Qwx/OoXppTMobcMA=", "9ck2+C7xyQRGonOUKYJvZw==", "toast" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Bookmarks_ArchiveId",
                 table: "Bookmarks",
                 column: "ArchiveId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Bookmarks_FaviconId",
+                table: "Bookmarks",
+                column: "FaviconId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Bookmarks_FolderId",
@@ -217,6 +245,9 @@ namespace Bookstore.Migrations
 
             migrationBuilder.DropTable(
                 name: "Archives");
+
+            migrationBuilder.DropTable(
+                name: "Favicon");
 
             migrationBuilder.DropTable(
                 name: "Folders");

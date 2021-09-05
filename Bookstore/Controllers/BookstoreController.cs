@@ -74,7 +74,6 @@ namespace Bookstore.Controllers
                     var loader = await finishedTask;
                     Bookmark bookmark = bookmarksToRefresh.First(bm => bm.Url == loader.OriginalUrl);
                     bookmark.Favicon = loader.Favicon;
-                    bookmark.FaviconMime = loader.FaviconMimeType;
                     bookmark.Title = loader.Title;
                     bookmark.Url = loader.FinalUrl;
                 }

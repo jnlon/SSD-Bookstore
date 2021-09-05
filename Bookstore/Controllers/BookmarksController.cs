@@ -40,8 +40,8 @@ namespace Bookstore.Controllers
         public FileContentResult Favicon(long id)
         {
             Bookmark? bookmark = _bookstore.GetSingleBookmarkById(id);
-            byte[] icon = bookmark?.Favicon ?? new byte[]{};
-            string iconMimeType = bookmark?.FaviconMime ?? "";
+            byte[] icon = bookmark?.Favicon.Data ?? new byte[]{};
+            string iconMimeType = bookmark?.Favicon.Mime ?? "";
             var result = new FileContentResult(icon, iconMimeType);
             
             Response.Headers.Add("Cache-Control", "public, immutable");
@@ -78,7 +78,7 @@ namespace Bookstore.Controllers
             }
 
             var load = await BookmarkLoader.Create(url, _httpClient);
-            var bookmark = _bookstore.CreateBookmark(null, DateTime.Now, DateTime.Now, load.Favicon, load.FaviconMimeType, null, new HashSet<Tag>(), load.Title, load.FinalUrl);
+            var bookmark = _bookstore.CreateBookmark(null, DateTime.Now, DateTime.Now, load?.Favicon?.Data, load?.Favicon?.Mime, load?.Favicon?.Url, null, new HashSet<Tag>(), load.Title, load.FinalUrl);
             
             if (archiveBookmark)
             {

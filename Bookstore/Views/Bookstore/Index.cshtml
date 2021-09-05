@@ -195,18 +195,20 @@
                             }
                         </td> 
                         <td class="align-middle">
-                            @if (bookmark.Favicon != null)
+                            @if (bookmark.FaviconId != null)
                             {
                                 <img style="width: 1.5em; height: 1.5em;" src="~/Bookmarks/Favicon/@bookmark.Id">
                             }
-                            <a href="@bookmark.Url" class="bookstore-table-link" title="@bookmark.Title">@TruncateTitle(bookmark.Title)</a>
+                            <a href="@bookmark.Url" target="_blank" class="bookstore-table-link" title="@bookmark.Title">@TruncateTitle(bookmark.Title)</a>
                         </td>
                         <td class="align-middle">
                             @if (bookmark.Tags.Count > 0)
                             {
-                                @foreach (var tag in bookmark.Tags)
+                                var tags = bookmark.Tags.OrderBy(t => t.Name).ToList();
+                                var last = tags.Last();
+                                foreach (var tag in tags)
                                 {
-                                    <a class="bookstore-table-tag" href="?search=tag(@tag.Name)">@tag.Name</a><span>@(tag != bookmark.Tags.Last() ? "," : "")</span>
+                                    <a class="bookstore-table-tag" href="?search=tag(@tag.Name)">@tag.Name</a><span>@(tag == last ? "" : ",")</span>
                                 }
                             }
                             else
@@ -217,7 +219,7 @@
                         <td class="align-middle">
                             @if (bookmark.ArchiveId != null) 
                             {
-                                <a asp-controller="Bookmarks" asp-action="Archive" asp-route-id="@bookmark.Id">View</a>
+                                <a target="_blank" asp-controller="Bookmarks" asp-action="Archive" asp-route-id="@bookmark.Id">View</a>
                             }
                             else
                             {

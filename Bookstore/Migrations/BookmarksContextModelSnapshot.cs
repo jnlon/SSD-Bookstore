@@ -74,16 +74,19 @@ namespace Bookstore.Migrations
                     b.Property<DateTime>("Created")
                         .HasColumnType("TEXT");
 
-                    b.Property<byte[]>("Favicon")
-                        .HasColumnType("BLOB");
-
-                    b.Property<string>("FaviconMime")
-                        .HasColumnType("TEXT");
+                    b.Property<long?>("FaviconId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<long?>("FolderId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("FolderString")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("Modified")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TagString")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Title")
@@ -94,6 +97,9 @@ namespace Bookstore.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("UrlString")
+                        .HasColumnType("TEXT");
+
                     b.Property<long>("UserId")
                         .HasColumnType("INTEGER");
 
@@ -101,11 +107,35 @@ namespace Bookstore.Migrations
 
                     b.HasIndex("ArchiveId");
 
+                    b.HasIndex("FaviconId");
+
                     b.HasIndex("FolderId");
 
                     b.HasIndex("UserId");
 
                     b.ToTable("Bookmarks");
+                });
+
+            modelBuilder.Entity("Bookstore.Models.Favicon", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<byte[]>("Data")
+                        .IsRequired()
+                        .HasColumnType("BLOB");
+
+                    b.Property<string>("Mime")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Url")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Favicon");
                 });
 
             modelBuilder.Entity("Bookstore.Models.Folder", b =>
@@ -202,16 +232,16 @@ namespace Bookstore.Migrations
                         {
                             Id = 1L,
                             Admin = true,
-                            PasswordHash = "3JVdPcaDGDmMkGgEs9sTxZeXz4bYBItuD5AaffFQWMM=",
-                            PasswordSalt = "evNkbyJyGkzS8TbMtYtGaA==",
+                            PasswordHash = "mR1tQOw++zjvkMADDH1SeDh7HSdE7uip8zf+iOZyUDY=",
+                            PasswordSalt = "DrnXuVEaYByINgod99jT6Q==",
                             Username = "admin"
                         },
                         new
                         {
                             Id = 2L,
                             Admin = false,
-                            PasswordHash = "FBvEEGGvbpBxSHLCtWdNn+UiZz6wIf4p+XeEUU9v1lI=",
-                            PasswordSalt = "9vqnI/oT4vm5ZlER7Tn2dg==",
+                            PasswordHash = "ShI7BvM6W5m1rU4934FTgTZ994/Qwx/OoXppTMobcMA=",
+                            PasswordSalt = "9ck2+C7xyQRGonOUKYJvZw==",
                             Username = "toast"
                         });
                 });
@@ -237,6 +267,10 @@ namespace Bookstore.Migrations
                         .WithMany()
                         .HasForeignKey("ArchiveId");
 
+                    b.HasOne("Bookstore.Models.Favicon", "Favicon")
+                        .WithMany()
+                        .HasForeignKey("FaviconId");
+
                     b.HasOne("Bookstore.Models.Folder", "Folder")
                         .WithMany("Bookmarks")
                         .HasForeignKey("FolderId");
@@ -248,6 +282,8 @@ namespace Bookstore.Migrations
                         .IsRequired();
 
                     b.Navigation("Archive");
+
+                    b.Navigation("Favicon");
 
                     b.Navigation("Folder");
 

@@ -33,23 +33,74 @@ namespace Bookstore.Utilities
 
         public void Execute(BookstoreService bookstore)
         {
-            Func<Bookmark, IComparable> orderby = Search.SortField switch
+            // Bookmark[] allBookmarks = bookstore.QueryAllUserBookmarks().ToArray();
+            // IEnumerable<Bookmark> query = allBookmarks.Where(Search.PassesAllFilters);
+
+            IQueryable<Bookmark> query = bookstore.QueryAllUserBookmarks().Include(bm => bm.Archive);
+            
+            // Passes General Filter
+            foreach (var filter in Search.GeneralFilter)
             {
-                SearchQueryField.Archived => bm => bm.ArchiveId == null,
-                SearchQueryField.Folder => bm => bm.Folder?.ToMenuString() ?? string.Empty,
-                SearchQueryField.Tag => bm => string.Join(",", bm.Tags.ToList().OrderBy(tag => tag.Name)),
-                SearchQueryField.Title => bm => bm.Title,
-                SearchQueryField.Url => bm => bm.Url.ToString()
-            };
+                query = query.Where(bm => 
+                    EF.Functions.Like(bm.UrlString, "%" + filter.Argument + "%") || // URL Matches
+                    EF.Functions.Like(bm.Title, "%" + filter.Argument + "%") ||     // Title Matches
+                    EF.Functions.Like(bm.TagString, "%" + filter.Argument + "%") || // Tag matches
+                    EF.Functions.Like(bm.FolderString, "%" + filter.Argument + "%") // Folder matches
+                   //  (bm.Archive != null && bm.Archive.PlainText != null && EF.Functions.Like(bm.Archive.PlainText, "%" + argument + "%")) // Archive Text matches
+                );
+            }
+            
+            // archived()
+            if (Search.ArchivedFilter != null)
+                query = query.Where(bm => (bm.ArchiveId == null) == (Search.ArchivedFilter == false));
+            
+            // title()
+            foreach (var filter in Search.TitleFilter)
+                query = query.Where(bm => EF.Functions.Like(bm.Title, "%" + filter.Argument + "%"));
+            
+            // url()
+            foreach (var filter in Search.UrlFilter)
+                query = query.Where(bm => EF.Functions.Like(bm.UrlString, "%" + filter.Argument + "%"));
 
-            Bookmark[] allBookmarks = bookstore.QueryAllUserBookmarks().ToArray();
-            IEnumerable<Bookmark> query = allBookmarks.Where(Search.PassesAllFilters);
-
+            // folders()
+            foreach (var filter in Search.RecursiveFoldersFilter)
+                query = query.Where(bm => EF.Functions.Like(bm.FolderString, "%" + filter.Argument + "%"));
+            
+            // folder()
+            foreach (var filter in Search.SingleFolderFilter)
+                query = query.Where(bm => EF.Functions.Like(bm.FolderString, filter.Argument));
+            
+            // tag()
+            foreach (var filter in Search.TagFilter)
+                query = query.Where(bm => EF.Functions.Like(bm.TagString, "%" + filter.Argument + "%"));
+            
+            // intext()
+            foreach (var filter in Search.IntextFilter)
+            {
+                query = query.Where(bm => bm.ArchiveId != null);
+                query = query.Where(bm =>
+                    bm.Archive != null &&
+                    bm.Archive.PlainText != null &&
+                    EF.Functions.Like(bm.Archive.PlainText, "%" + filter.Argument + "%"));
+            }
+            
             // Apply sort on selected field
             if (Search.SortDescending)
-                query = query.OrderByDescending(orderby);
+            {
+                if (Search.SortField == SearchQueryField.Archived) query = query.OrderByDescending(bm => bm.ArchiveId == null);
+                else if (Search.SortField == SearchQueryField.Folder) query = query.OrderByDescending(bm => bm.FolderString);
+                else if (Search.SortField == SearchQueryField.Tag) query = query.OrderByDescending(bm => bm.TagString);
+                else if (Search.SortField == SearchQueryField.Title) query = query.OrderByDescending(bm => bm.Title);
+                else if (Search.SortField == SearchQueryField.Url) query = query.OrderByDescending(bm => bm.UrlString);
+            }
             else
-                query = query.OrderBy(orderby);
+            {
+                if (Search.SortField == SearchQueryField.Archived) query = query.OrderBy(bm => bm.ArchiveId == null);
+                else if (Search.SortField == SearchQueryField.Folder) query = query.OrderBy(bm => bm.FolderString);
+                else if (Search.SortField == SearchQueryField.Tag) query = query.OrderBy(bm => bm.TagString);
+                else if (Search.SortField == SearchQueryField.Title) query = query.OrderBy(bm => bm.Title);
+                else if (Search.SortField == SearchQueryField.Url) query = query.OrderBy(bm => bm.UrlString);
+            }
 
             TotalQueriedBookmarks = query.Count();
 
@@ -59,7 +110,7 @@ namespace Bookstore.Utilities
                 .Take(_itemsPerPage)
                 .ToList();
             
-            TotalBookmarks = allBookmarks.Count();
+            TotalBookmarks = bookstore.QueryAllUserBookmarks().Count();
             QueriedBookmarks = Results.Count;
             
             TotalTags = bookstore.QueryAllUserTags().Count();
