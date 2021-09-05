@@ -36,7 +36,7 @@ namespace Bookstore.Utilities
             // Bookmark[] allBookmarks = bookstore.QueryAllUserBookmarks().ToArray();
             // IEnumerable<Bookmark> query = allBookmarks.Where(Search.PassesAllFilters);
 
-            IQueryable<Bookmark> query = bookstore.QueryAllUserBookmarks().Include(bm => bm.Archive);
+            IQueryable<Bookmark> query = bookstore.QueryAllUserBookmarks();
             
             // Passes General Filter
             foreach (var filter in Search.GeneralFilter)
@@ -77,7 +77,7 @@ namespace Bookstore.Utilities
             // intext()
             foreach (var filter in Search.IntextFilter)
             {
-                query = query.Where(bm => bm.ArchiveId != null);
+                query = query.Include(bm => bm.Archive);
                 query = query.Where(bm =>
                     bm.Archive != null &&
                     bm.Archive.PlainText != null &&
@@ -85,7 +85,11 @@ namespace Bookstore.Utilities
             }
             
             // Apply sort on selected field
-            if (Search.SortField is not null)
+            if (Search.SortField is null)
+            {
+                query = query.OrderBy(bm => bm.Id);
+            }
+            else
             {
                 if (Search.SortDescending)
                 {

@@ -139,6 +139,8 @@ namespace Bookstore.Utilities
                 Formatted = cleanHtml,
                 Mime = mime,
             };
+            
+            bookmark.Modified = DateTime.Now;
         }
 
         public async Task Archive(Bookmark bookmark)
@@ -158,10 +160,15 @@ namespace Bookstore.Utilities
             Archive(bookmark, response, raw);
         }
         
-        public void ArchiveAll(IEnumerable<Bookmark> bookmarks)
+        public async Task ArchiveAll(IEnumerable<Bookmark> bookmarks)
         {
-            Task.WaitAll(bookmarks.Select(Archive).ToArray());
-            // Parallel.ForEach(bookmarks, bookmark => Archive(bookmark).Wait());
+            var tasks = bookmarks.Select(Archive).ToList();
+            
+            while (tasks.Any())
+            {
+                Task finishedTask = await Task.WhenAny(tasks);
+                tasks.Remove(finishedTask);
+            }
         }
     }
 }

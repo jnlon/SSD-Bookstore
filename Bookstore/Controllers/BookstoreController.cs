@@ -92,7 +92,7 @@ namespace Bookstore.Controllers
             {
                 var bookmarksToArchive = _bookstore.QueryUserBookmarksByIds(selected);
                 var archiver = new BookmarkArchiver(_httpClient);
-                archiver.ArchiveAll(bookmarksToArchive);
+                await archiver.ArchiveAll(bookmarksToArchive);
                 await _context.SaveChangesAsync();
             }
             else
