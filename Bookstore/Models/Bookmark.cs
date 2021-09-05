@@ -33,6 +33,12 @@ namespace Bookstore.Models
             get { return Url.ToString().ToLower(); }
             set { }
         }
+        
+        public string? DomainString
+        {
+            get { return Url.Host; }
+            set { }
+        }
 
         public string Title { get; set; }
         public HashSet<Tag> Tags { get; set; }

@@ -47,6 +47,7 @@ namespace Bookstore.Models
             builder.Entity<Bookmark>().Property(t => t.FolderString).UsePropertyAccessMode(PropertyAccessMode.Property);
             builder.Entity<Bookmark>().Property(t => t.TagString).UsePropertyAccessMode(PropertyAccessMode.Property);
             builder.Entity<Bookmark>().Property(t => t.UrlString).UsePropertyAccessMode(PropertyAccessMode.Property);
+            builder.Entity<Bookmark>().Property(t => t.DomainString).UsePropertyAccessMode(PropertyAccessMode.Property);
 
             IWebHostEnvironment env = this.GetService<IWebHostEnvironment>();
             IConfiguration config = this.GetService<IConfiguration>();

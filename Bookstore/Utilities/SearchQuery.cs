@@ -6,7 +6,7 @@ using Bookstore.Models;
 
 namespace Bookstore.Utilities
 {
-    public enum SearchQueryField { Tag, Folder, Title, Url, Archived, Modified }
+    public enum SearchQueryField { Tag, Folder, Title, Url, Archived, Modified, Domain }
 
     public class SearchQueryFunction
     {

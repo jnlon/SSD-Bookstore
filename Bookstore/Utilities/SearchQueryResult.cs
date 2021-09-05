@@ -99,6 +99,7 @@ namespace Bookstore.Utilities
                     else if (Search.SortField == SearchQueryField.Title) query = query.OrderByDescending(bm => bm.Title);
                     else if (Search.SortField == SearchQueryField.Url) query = query.OrderByDescending(bm => bm.UrlString);
                     else if (Search.SortField == SearchQueryField.Modified) query = query.OrderByDescending(bm => bm.Modified);
+                    else if (Search.SortField == SearchQueryField.Domain) query = query.OrderByDescending(bm => bm.DomainString);
                 }
                 else
                 {
@@ -108,6 +109,7 @@ namespace Bookstore.Utilities
                     else if (Search.SortField == SearchQueryField.Title) query = query.OrderBy(bm => bm.Title);
                     else if (Search.SortField == SearchQueryField.Url) query = query.OrderBy(bm => bm.UrlString);
                     else if (Search.SortField == SearchQueryField.Modified) query = query.OrderBy(bm => bm.Modified);
+                    else if (Search.SortField == SearchQueryField.Domain) query = query.OrderBy(bm => bm.DomainString);
                 }
             }
 

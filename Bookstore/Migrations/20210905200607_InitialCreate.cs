@@ -106,6 +106,7 @@ namespace Bookstore.Migrations
                     Modified = table.Column<DateTime>(type: "TEXT", nullable: false),
                     Url = table.Column<string>(type: "TEXT", nullable: false),
                     UrlString = table.Column<string>(type: "TEXT", nullable: true),
+                    DomainString = table.Column<string>(type: "TEXT", nullable: true),
                     Title = table.Column<string>(type: "TEXT", nullable: false),
                     TagString = table.Column<string>(type: "TEXT", nullable: true)
                 },
@@ -185,12 +186,12 @@ namespace Bookstore.Migrations
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "Id", "Admin", "PasswordHash", "PasswordSalt", "Username" },
-                values: new object[] { 1L, true, "mR1tQOw++zjvkMADDH1SeDh7HSdE7uip8zf+iOZyUDY=", "DrnXuVEaYByINgod99jT6Q==", "admin" });
+                values: new object[] { 1L, true, "XJjYQeBxEbIPuv9qpD5B+X4CH9OnqPSr5tTJLR7CKZg=", "nI4y6QEqFGuxfQ1Gv0U1Ww==", "admin" });
 
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "Id", "Admin", "PasswordHash", "PasswordSalt", "Username" },
-                values: new object[] { 2L, false, "ShI7BvM6W5m1rU4934FTgTZ994/Qwx/OoXppTMobcMA=", "9ck2+C7xyQRGonOUKYJvZw==", "toast" });
+                values: new object[] { 2L, false, "eUn0bepndUfU8tSaH3GEivTkS57UXa4jNaojzjK5TsA=", "zc04r0J5DF5gNcv3klxF4A==", "toast" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Bookmarks_ArchiveId",

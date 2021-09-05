@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Bookstore.Migrations
 {
     [DbContext(typeof(BookmarksContext))]
-    [Migration("20210905071534_InitialCreate")]
+    [Migration("20210905200607_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -74,6 +74,9 @@ namespace Bookstore.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("Created")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DomainString")
                         .HasColumnType("TEXT");
 
                     b.Property<long?>("FaviconId")
@@ -234,16 +237,16 @@ namespace Bookstore.Migrations
                         {
                             Id = 1L,
                             Admin = true,
-                            PasswordHash = "mR1tQOw++zjvkMADDH1SeDh7HSdE7uip8zf+iOZyUDY=",
-                            PasswordSalt = "DrnXuVEaYByINgod99jT6Q==",
+                            PasswordHash = "XJjYQeBxEbIPuv9qpD5B+X4CH9OnqPSr5tTJLR7CKZg=",
+                            PasswordSalt = "nI4y6QEqFGuxfQ1Gv0U1Ww==",
                             Username = "admin"
                         },
                         new
                         {
                             Id = 2L,
                             Admin = false,
-                            PasswordHash = "ShI7BvM6W5m1rU4934FTgTZ994/Qwx/OoXppTMobcMA=",
-                            PasswordSalt = "9ck2+C7xyQRGonOUKYJvZw==",
+                            PasswordHash = "eUn0bepndUfU8tSaH3GEivTkS57UXa4jNaojzjK5TsA=",
+                            PasswordSalt = "zc04r0J5DF5gNcv3klxF4A==",
                             Username = "toast"
                         });
                 });
