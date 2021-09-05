@@ -1,10 +1,11 @@
 ﻿@using Bookstore.Utilities
+@using Bookstore.Common
 @{
     string controller = ViewContext.RouteData.Values["Controller"] as string;
     string action = ViewContext.RouteData.Values["Action"] as string;
     bool isIndex = action == "Index";
     bool isAdmin = User.IsBookstoreAdmin();
-    string navController = isAdmin ? "Admin" : "Bookstore";
+    string navController = isAdmin ? "Admin" : Constants.AppName;
     string title = navController + (isIndex ? string.Empty : $" | {action}");
 }
 <!DOCTYPE html>

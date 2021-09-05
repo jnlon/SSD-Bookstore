@@ -1,5 +1,5 @@
 using System.Security.Claims;
-using Bookstore.Constants.Authorization;
+using Bookstore.Common.Authorization;
 using Bookstore.Utilities;
 using Microsoft.AspNetCore.Mvc;
 

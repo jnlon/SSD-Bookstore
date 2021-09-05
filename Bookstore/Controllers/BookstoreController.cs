@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Bookstore.Common;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Bookstore.Models;
@@ -17,12 +19,14 @@ namespace Bookstore.Controllers
         private readonly ILogger<BookstoreController> _logger;
         private readonly BookmarksContext _context;
         private readonly BookstoreService _bookstore;
+        private readonly HttpClient _httpClient;
 
-        public BookstoreController(ILogger<BookstoreController> logger, BookmarksContext context, BookstoreService bookstore)
+        public BookstoreController(IHttpClientFactory clientFactory, ILogger<BookstoreController> logger, BookmarksContext context, BookstoreService bookstore)
         {
             _logger = logger;
             _context = context;
             _bookstore = bookstore;
+            _httpClient = clientFactory.CreateClient(Constants.AppName);
         }
 
         [HttpGet]
@@ -51,7 +55,7 @@ namespace Bookstore.Controllers
         }
         
         [HttpPost]
-        public IActionResult Index(string action, long[] selected, string? search, int page = 1)
+        public async Task<IActionResult> Index(string action, long[] selected, string? search, int page = 1)
         {
             if (action == "Edit")
             {
@@ -59,32 +63,37 @@ namespace Bookstore.Controllers
             } 
             else if (action == "Refresh")
             {
-                var bookmarksToRefresh = _bookstore.QueryUserBookmarksByIds(selected);
+                var bookmarksToRefresh = _bookstore.QueryUserBookmarksByIds(selected).AsEnumerable().ToList();
+                var downloadTasks = bookmarksToRefresh.Select(bm => BookmarkLoader.Create(bm.Url, _httpClient)).ToList();
+                    
+                while (downloadTasks.Any())
+                {
+                    Task<BookmarkLoader> finishedTask = await Task.WhenAny(downloadTasks);
+                    downloadTasks.Remove(finishedTask);
+                    
+                    var loader = await finishedTask;
+                    Bookmark bookmark = bookmarksToRefresh.First(bm => bm.Url == loader.OriginalUrl);
+                    bookmark.Favicon = loader.Favicon;
+                    bookmark.FaviconMime = loader.FaviconMimeType;
+                    bookmark.Title = loader.Title;
+                    bookmark.Url = loader.FinalUrl;
+                }
 
-                Parallel.ForEach(bookmarksToRefresh, bm =>
-                    {
-                        var loader = BookmarkLoader.Create(bm.Url, new HttpClient());
-                        bm.Favicon = loader.Favicon;
-                        bm.FaviconMime = loader.FaviconMimeType;
-                        bm.Title = loader.Title;
-                    }
-                );
-                
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             }
             else if (action == "Delete")
             {
                 var bookmarksToDelete = _bookstore.QueryUserBookmarksByIds(selected);
                 _context.Bookmarks.RemoveRange(bookmarksToDelete);
                 _bookstore.CleanupBookmarkOrphans();
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             }
             else if (action == "Archive")
             {
                 var bookmarksToArchive = _bookstore.QueryUserBookmarksByIds(selected);
-                var archiver = new BookmarkArchiver();
+                var archiver = new BookmarkArchiver(_httpClient);
                 archiver.ArchiveAll(bookmarksToArchive);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             }
             else
             {

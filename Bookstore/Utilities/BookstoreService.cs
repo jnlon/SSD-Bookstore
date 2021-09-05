@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
-using Bookstore.Constants.Authorization;
+using Bookstore.Common.Authorization;
 using Bookstore.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -253,7 +253,7 @@ namespace Bookstore.Utilities
                Folder = folder,
                Modified = created,
                Tags = tags,
-               Title = title,
+               Title = title.Trim(),
                User = _user,
                Url = url
             };

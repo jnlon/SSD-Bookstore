@@ -30,8 +30,8 @@ namespace Bookstore.Utilities
                 Added = bookmark.Created,
                 Title = bookmark.Title,
                 LastModified = bookmark.Modified,
-                IconData = bookmark.Favicon,
-                IconContentType = bookmark.FaviconMime,
+                // IconData = bookmark.Favicon,
+                // IconContentType = bookmark.FaviconMime,
                 Attributes = attributes
             };
         }
@@ -66,7 +66,12 @@ namespace Bookstore.Utilities
         public string Export()
         {
             var root = new BookmarkFolder();
-            var rootFolders = _service.QueryAllUserFolders().Where(f => f.ParentId == null).ToList();
+            
+            // Query all bookmarks without a root folder, and put it in netscape export root
+            foreach (Bookmark bookmark in _service.QueryAllUserBookmarks().Where(bm => bm.FolderId == null))
+            {
+                root.Add(ExportBookmark(bookmark));
+            }
             
             // Query all root folders
             // For each root folder
@@ -75,7 +80,8 @@ namespace Bookstore.Utilities
             // Create the folder in current folder
             // Set child folder as new current folder
             // Recurse to *
-
+            
+            var rootFolders = _service.QueryAllUserFolders().Where(f => f.ParentId == null).ToList();
             foreach (var folder in rootFolders)
             {
                 ExportFolders(folder, root);

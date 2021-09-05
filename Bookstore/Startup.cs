@@ -1,21 +1,17 @@
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Bookstore.Constants.Authorization;
+using System.Net.Http;
+using Bookstore.Common;
+using Bookstore.Common.Authorization;
 using Bookstore.Models;
 using Bookstore.Utilities;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 
 namespace Bookstore
@@ -35,6 +31,14 @@ namespace Bookstore
         {
             
             services.AddHttpContextAccessor();
+
+
+            services.AddHttpClient(Constants.AppName, (options) =>
+            {
+                options.Timeout = TimeSpan.FromSeconds(20);
+                options.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0");
+            });
+            //.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler() { MaxConnectionsPerServer = 1 } );
             
             services.AddControllersWithViews();
             services
@@ -53,8 +57,6 @@ namespace Bookstore
                     .RequireAuthenticatedUser()
                     .Build();
             });
-
-            services.AddHttpClient();
 
             services.AddAuthentication(schema)
                 .AddCookie(schema, options =>

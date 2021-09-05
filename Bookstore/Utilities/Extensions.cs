@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Net.Http;
 using System.Security.Claims;
-using Bookstore.Constants.Authorization;
+using Bookstore.Common.Authorization;
 
 namespace Bookstore.Utilities
 {

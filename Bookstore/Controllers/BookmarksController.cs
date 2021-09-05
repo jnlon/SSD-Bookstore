@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Bookstore.Common;
 using Bookstore.Models;
 using Bookstore.Models.View;
 using Bookstore.Utilities;
@@ -15,15 +16,15 @@ namespace Bookstore.Controllers
     [Authorize(Policy = "MemberOnly")]
     public class BookmarksController : Controller
     {
-        private IHttpClientFactory _httpClientFactory;
         private readonly BookmarksContext _context;
         private readonly BookstoreService _bookstore;
+        private readonly HttpClient _httpClient;
 
         public BookmarksController(IHttpClientFactory clientFactory, BookmarksContext context, BookstoreService bookstore)
         {
-            _httpClientFactory = clientFactory;
             _context = context;
             _bookstore = bookstore;
+            _httpClient = clientFactory.CreateClient(Constants.AppName);
         }
         
         [HttpGet]
@@ -51,7 +52,7 @@ namespace Bookstore.Controllers
         }
         
         [HttpPost]
-        public IActionResult Save([FromForm(Name = "url")] string? urlString, [FromForm(Name = "archive-bookmark")] bool archiveBookmark, [FromQuery] bool editRedirect)
+        public async Task<IActionResult> Save([FromForm(Name = "url")] string? urlString, [FromForm(Name = "archive-bookmark")] bool archiveBookmark, [FromQuery] bool editRedirect)
         {
             var routeValues = new RouteValueDictionary();
             
@@ -67,44 +68,29 @@ namespace Bookstore.Controllers
                 return RedirectToAction("Create", "Bookmarks", routeValues);
             }
 
-            var url = new Uri(urlString);
-            bool bookmarkExists = _bookstore.QueryAllUserBookmarks().Any(bm => bm.Url == url);
+            Uri url = new(urlString);
+            Bookmark? existingBookmark = _bookstore.QueryAllUserBookmarks().FirstOrDefault(bm => bm.Url == url);
 
-            if (bookmarkExists)
+            if (existingBookmark != null)
             {
                 routeValues["Error"] = $@"Bookmark with URL ""{urlString}"" already exists";
                 return RedirectToAction("Create", "Bookmarks", routeValues);
             }
 
-            var settings = _bookstore.GetUserSettings();
-            var load = BookmarkLoader.Create(url, _httpClientFactory.CreateClient());
-            var bookmark = new Bookmark
-            {
-                Archive = null,
-                UserId = _bookstore.User.Id,
-                User = _bookstore.User,
-                Created = DateTime.Now,
-                Modified = DateTime.Now,
-                Favicon = load.Favicon,
-                FaviconMime = load.FaviconMimeType,
-                Folder = null,
-                Tags = new HashSet<Tag>(),
-                Title = load.Title,
-                Url = url,
-                ArchiveId = null,
-                FolderId = null
-            };
+            var load = await BookmarkLoader.Create(url, _httpClient);
+            var bookmark = _bookstore.CreateBookmark(null, DateTime.Now, DateTime.Now, load.Favicon, load.FaviconMimeType, null, new HashSet<Tag>(), load.Title, load.FinalUrl);
             
-            if (settings.ArchiveByDefault)
+            if (archiveBookmark)
             {
-                var archiver = new BookmarkArchiver();
+                var archiver = new BookmarkArchiver(_httpClient);
                 archiver.Archive(bookmark, load.Response, load.Raw);
             }
 
             _context.Bookmarks.Add(bookmark);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             if (editRedirect)
+                
             {
                 // Now get the max bookmark ID for this user so we can fetch the URL
                 routeValues["ids"] = _bookstore.QueryAllUserBookmarks().OrderByDescending(b => b.Id).First().Id;

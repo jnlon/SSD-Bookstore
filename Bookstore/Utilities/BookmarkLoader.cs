@@ -6,6 +6,11 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text;
+using System.Threading.Tasks;
+using System.Web;
+using Bookstore.Models;
+using Bookstore.Views.Admin;
 using HtmlAgilityPack;
 
 namespace Bookstore.Utilities
@@ -16,15 +21,22 @@ namespace Bookstore.Utilities
         private class Download
         {
             public readonly HttpResponseMessage? Response;
-            public Download(HttpClient client, Uri uri)
+
+            private Download(HttpResponseMessage response)
+            {
+                Response = response;
+            }
+
+            public static async Task<Download> Create(HttpClient client, Uri uri)
             {
                 try
                 {
-                    Response = client.GetAsync(uri).Result;
+                    var response = await client.GetAsync(HttpUtility.UrlDecode(uri.ToString()));
+                    return new Download(response);
                 }
                 catch (Exception)
                 {
-                    Response = null;
+                    return new Download(null);
                 }
             }
             
@@ -32,6 +44,8 @@ namespace Bookstore.Utilities
             public string? ContentType => Response?.Content.Headers.ContentType?.ToString();
             public bool IsImageMime => ContentType?.ToLower().Contains("image") ?? false;
             public bool IsHtmlMime => ContentType?.ToLower().Contains("html") ?? false;
+            public Uri? Location => Response?.Headers.Location;
+            public Uri? RequestUrl => Response?.RequestMessage?.RequestUri;
 
             public byte[]? ReadAsBytes(uint limitBytes)
             {
@@ -49,19 +63,47 @@ namespace Bookstore.Utilities
             {
                 _source = source;
                 _doc = new HtmlDocument();
-                _doc.Load(new MemoryStream(content));
-                IconUri = FindIconUri();
+                var encoding = DetectPageEncoding(content);
+                _doc.Load(new MemoryStream(content), encoding);
+                IconUri = FindIconUri(source);
                 Title = _doc.DocumentNode.SelectSingleNode("//head/title")?.InnerText;
             }
 
-            private Uri? FindIconUri()
+            private static Encoding DetectPageEncoding(byte[] content)
             {
-                string? href = _doc.DocumentNode.SelectSingleNode(@"//head/link[@rel=""icon""]")?.Attributes["href"]?.Value;
+                var doc = new HtmlDocument();
+                doc.Load(new MemoryStream(content));
+                
+                // Look for <meta charset=""> tag
+                string? metaCharset = doc.DocumentNode
+                    ?.SelectNodes("//meta[@charset]")
+                    ?.FirstOrDefault()
+                    ?.Attributes["charset"]
+                    .Value;
+
+                try
+                {
+                    if (metaCharset != null)
+                    {
+                        return CodePagesEncodingProvider.Instance.GetEncoding(metaCharset) ?? Encoding.UTF8;
+                    }
+                }
+                catch (ArgumentException) { }
+                
+                return Encoding.UTF8;
+            }
+
+            private Uri? FindIconUri(Uri sourceUri)
+            {
+                string? href = _doc.DocumentNode.SelectSingleNode(@"//head/link[contains(@rel, 'icon')]")?.Attributes["href"]?.Value;
+                href ??= WebUtility.UrlDecode(href);
                 
                 if (href is null)
                     return null;
                 if (href.StartsWith("http://") || href.StartsWith("https://"))
                     return new UriBuilder(href).Uri;
+                if (href.StartsWith("//"))
+                    return new UriBuilder(sourceUri.Scheme + ":" + href).Uri;
                 if (href.StartsWith("/"))
                     return new UriBuilder(_source) { Path = href }.Uri;
                 
@@ -74,29 +116,41 @@ namespace Bookstore.Utilities
         public string? FaviconMimeType { get; private set; }
         public byte[]? Favicon { get; private set; }
         public string Title { get; private set; } = string.Empty;
-        
+        public Uri FinalUrl { get; private set; } // After redirects
+        public Uri OriginalUrl { get; private set; } // Before Redirects
+
         public byte[]? Raw { get; private set; }
         public HttpResponseMessage? Response { get; private set; }
 
-        public static BookmarkLoader Create(Uri bookmarkUrl, HttpClient client)
+        public static async Task<BookmarkLoader> Create(Uri bookmarkUrl, HttpClient client)
         {
+            Uri originalUri = bookmarkUrl;
             byte[]? rawHtml = null;
             Html? html = null;
             byte[]? favicon = null;
             string? faviconMimeType = null;
             
             // Download the bookmark. If it was successful, and was an HTML file, load HTMLHelper
-            var htmlDownload = new Download(client, bookmarkUrl);
+            var htmlDownload = await Download.Create(client, bookmarkUrl);
+
+            bookmarkUrl = htmlDownload.RequestUrl ?? bookmarkUrl;
+
+            for (int redirect=0; htmlDownload.Location != null && redirect < 10; redirect++)
+            {
+                bookmarkUrl = htmlDownload.Location;
+                htmlDownload = await Download.Create(client, bookmarkUrl);
+            }
+            
             if (htmlDownload.Success && htmlDownload.IsHtmlMime)
             {
                 rawHtml = htmlDownload.ReadAsBytes(MaxDownloadSize);
-                html = new Html(rawHtml, bookmarkUrl);
+                html = new Html(rawHtml ?? new byte[]{}, bookmarkUrl);
             }
             
             // Retrieve favicon from the HTMl, or fall back to standard location
             var faviconUrl = html?.IconUri ?? new UriBuilder(bookmarkUrl) { Path = "/favicon.ico" }.Uri;
             // Attempt to Download the favicon
-            var faviconDownload = new Download(client, faviconUrl);
+            var faviconDownload = await Download.Create(client, faviconUrl);
             
             // If the favicon download was successful, and it is an image
             if (faviconDownload.Success && faviconDownload.IsImageMime)
@@ -113,7 +167,9 @@ namespace Bookstore.Utilities
                 Favicon = favicon,
                 Title = title,
                 Raw = rawHtml,
-                Response = htmlDownload.Response
+                Response = htmlDownload.Response,
+                FinalUrl = bookmarkUrl,
+                OriginalUrl = originalUri
             };
         }
     }

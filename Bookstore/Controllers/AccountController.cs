@@ -4,7 +4,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
-using Bookstore.Constants.Authorization;
+using Bookstore.Common.Authorization;
 using Bookstore.Models;
 using Bookstore.Utilities;
 using Microsoft.AspNetCore.Authentication;

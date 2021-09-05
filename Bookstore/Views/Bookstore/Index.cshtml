@@ -137,31 +137,36 @@
                 <th>
                     <a
                         title="Sort by Folder"
-                        asp-controller="Bookstore"
                         asp-action="Index"
                         asp-route-page="1"
-                        asp-route-search="@search.QueryString sort(folder, @(search.SortField == SearchQueryField.Folder && !search.SortDescending ? "desc" : "asc"))">
+                        asp-route-search="sort(folder, @(search.SortField == SearchQueryField.Folder && !search.SortDescending ? "desc" : "asc"))">
                         Folder &#x296E;
                     </a>
                 </th>
                 <th>
                     <a
                         title="Sort by Bookmark"
-                        href="?search=sort(title, @(search.SortField == SearchQueryField.Title && !search.SortDescending ? "desc" : "asc"))">
+                        asp-action="Index"
+                        asp-route-page="1"
+                        asp-route-search="sort(title, @(search.SortField == SearchQueryField.Title && !search.SortDescending ? "desc" : "asc"))">
                         Bookmark &#x296E;
                     </a>
                 </th>
                 <th>
                     <a
                         title="Sort by Tag"
-                        href="?search=sort(tag, @(search.SortField == SearchQueryField.Tag && !search.SortDescending ? "desc" : "asc"))">
+                        asp-action="Index"
+                        asp-route-page="1"
+                        asp-route-search="sort(tag, @(search.SortField == SearchQueryField.Tag && !search.SortDescending ? "desc" : "asc"))">
                         Tags &#x296E;
                     </a>
                 </th>
                 <th>
                     <a
                         title="Sort by Archive Status"
-                        href="?search=sort(archived, @(search.SortField == SearchQueryField.Archived && !search.SortDescending ? "desc" : "asc"))">
+                        asp-action="Index"
+                        asp-route-page="1"
+                        asp-route-search="sort(archived, @(search.SortField == SearchQueryField.Archived && !search.SortDescending ? "desc" : "asc"))">
                         Archive &#x296E;
                     </a>
                 </th>

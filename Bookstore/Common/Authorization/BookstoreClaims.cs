@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace Bookstore.Constants.Authorization
+namespace Bookstore.Common.Authorization
 {
     public static class BookstoreClaims
     {

@@ -30,11 +30,9 @@ namespace Bookstore.Utilities
         
         private HttpClient _httpClient;
 
-        public BookmarkArchiver()
+        public BookmarkArchiver(HttpClient httpClient)
         {
-            var handler = new HttpClientHandler();
-            handler.MaxConnectionsPerServer = 1;
-            _httpClient = new HttpClient(handler);
+            _httpClient = httpClient;
         }
 
         public async Task<HttpResponseMessage> Download(Uri url)
