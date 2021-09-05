@@ -1,4 +1,5 @@
 @{
+    string prefillUrl = (ViewData["Url"] as string)!;
     Settings settings = (ViewData["Settings"] as Settings)!;
     string archiveByDefaultChecked = settings.ArchiveByDefault ? "checked" : "";
 }
@@ -8,7 +9,7 @@
     <form asp-action="Save">
         <div class="form-group form-inline">
             <label class="mr-3">URL</label>
-            <input class="form-control" type="text" name="url" size="50" placeholder="https://..." autofocus>
+            <input class="form-control" type="text" name="url" size="50" placeholder="https://..." autofocus value="@prefillUrl")>
         </div>
         <div class="form-group">
             <input class="" id="archive-bookmark" name="archive-bookmark" value="true" type="checkbox" @archiveByDefaultChecked>

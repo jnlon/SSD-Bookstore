@@ -8,6 +8,7 @@ using Bookstore.Models;
 using Bookstore.Models.View;
 using Bookstore.Utilities;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 
@@ -28,11 +29,12 @@ namespace Bookstore.Controllers
         }
         
         [HttpGet]
-        public IActionResult Create([FromQuery] string  message, [FromQuery] string error)
+        public IActionResult Create([FromQuery] string  message, [FromQuery] string error, [FromQuery] string url = "")
         {
             ViewData["Settings"] = _bookstore.GetUserSettings();
             ViewData["Message"] = message;
             ViewData["Error"] = error;
+            ViewData["Url"] = url;
             return View();
         }
 

@@ -58,8 +58,7 @@
             <div>intext(quux) - Query archived bookmarks where text contains "quux"</div>
             <div>folder(dir1/dir2) - Query bookmarks in folder "dir1/dir2"</div>
             <div>folders(dir1/dir2) - Recursively query bookmarks under "dir1/dir2", including subfolders</div>
-            <div>tag(tag1, tag2) - Query bookmarks having both tags "tag1" and "tag2"</div>
-            <div>tag(tag1) tag(tag2) - Query bookmarks having either tags "tag1" or "tag2"</div>
+            <div>tag(tag1) - Query bookmarks having tag "tag1"</div>
             <div>archived(true) - Query bookmarks that have been archived (opposite with "false")</div>
         </small>
     </details>
@@ -71,11 +70,11 @@
         
         <div class="d-flex justify-content-between align-items-center my-2 mb-3">
             <div class="w-50">
-                <input id="bookstore-control-archive" type="submit" name="action" class="btn btn-primary" value="Archive">
-                <input id="bookstore-control-edit" type="submit" name="action" class="btn btn-primary" value="Edit">
-                <input id="bookstore-control-refresh" type="submit" name="action" class="btn btn-primary" value="Refresh">
-                <input id="bookstore-control-delete" type="submit" name="action" class="btn btn-danger" value="Delete">
-                <button id="bookstore-control-select-all" type="button"  class="btn btn-success">Select All</button>
+                <input id="bookstore-control-archive" type="submit" name="action" class="btn btn-primary" title="Archive selected bookmarks" value="Archive">
+                <input id="bookstore-control-edit" type="submit" name="action" class="btn btn-primary" title="Edit selected bookmarks" value="Edit">
+                <input id="bookstore-control-refresh" type="submit" name="action" class="btn btn-primary" title="Refresh selected bookmark icon and title" value="Refresh">
+                <input id="bookstore-control-delete" type="submit" name="action" class="btn btn-danger" title="Delete selected bookmark" value="Delete">
+                <button id="bookstore-control-select-all" type="button"  class="btn btn-success" title="Select all bookmarks on page">Select All</button>
             </div>
             
             <nav class="text-center d-flex justify-content-center align-items-center mx-auto w-100">

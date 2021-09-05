@@ -94,7 +94,7 @@ namespace Bookstore
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
-            app.UseCookiePolicy(new CookiePolicyOptions() {MinimumSameSitePolicy = SameSiteMode.Strict});
+            app.UseCookiePolicy(new CookiePolicyOptions() {MinimumSameSitePolicy = SameSiteMode.Lax});
             app.UseStatusCodePages();
             
             // app.UseStaticFiles(new StaticFileOptions
