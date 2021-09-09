@@ -7,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace Bookstore.Models
 {
+    // Database context for managing bookmarks
     public class BookmarksContext : DbContext
     {
         public DbSet<User> Users { get; set; }
@@ -19,21 +20,20 @@ namespace Bookstore.Models
         {
         }
 
-
         private void InsertProductionData(ModelBuilder builder, IConfiguration config)
         {
-            var (passwordHash, passwordSalt) = Crypto.GeneratePasswordHash(config["Bookstore:DefaultPassword"]);
+            var (passwordHash, passwordSalt) = CryptoUtility.GeneratePasswordHash(config["Bookstore:DefaultPassword"]);
             var adminUser = new User() {Id = 1, Admin = true, Username = "admin", PasswordHash = passwordHash, PasswordSalt = passwordSalt};
             builder.Entity<User>().HasData(adminUser);
         }
 
         private void InsertDevelopmentData(ModelBuilder builder, IConfiguration config)
         {
-            var (passwordHash, passwordSalt) = Crypto.GeneratePasswordHash(config["Bookstore:DefaultPassword"]);
+            var (passwordHash, passwordSalt) = CryptoUtility.GeneratePasswordHash(config["Bookstore:DefaultPassword"]);
             var adminUser = new User {Id = 1, Admin = true, Username = "admin", PasswordHash = passwordHash, PasswordSalt = passwordSalt};
             builder.Entity<User>().HasData(adminUser);
             
-            (passwordHash, passwordSalt) = Crypto.GeneratePasswordHash(config["Bookstore:DefaultPassword"]);
+            (passwordHash, passwordSalt) = CryptoUtility.GeneratePasswordHash(config["Bookstore:DefaultPassword"]);
             var standardUser = new User {Id = 2, Admin = false, Username = "toast", PasswordHash = passwordHash, PasswordSalt = passwordSalt};
             builder.Entity<User>().HasData(standardUser);
         }

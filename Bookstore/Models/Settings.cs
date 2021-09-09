@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Bookstore.Models
 {
+    // Model representing user settings
     public class Settings
     {
         [Key, ForeignKey("User")]

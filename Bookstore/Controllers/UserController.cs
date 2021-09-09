@@ -1,4 +1,5 @@
 using System;
+using Bookstore.Controllers.Dto;
 using Bookstore.Models;
 using Bookstore.Utilities;
 using CsvHelper;
@@ -9,24 +10,13 @@ using Microsoft.AspNetCore.Routing;
 
 namespace Bookstore.Controllers
 {
-    // Import or Export types
+    // Import or Export file types
     public enum PortFileFormat { Netscape, CSV }
 
-    // Action
+    // Action: Import or Export
     public enum PortAction { Import, Export }
 
-    public class SettingsDto
-    {
-        [FromForm(Name = "default-query")]
-        public string? DefaultQuery { get; set; }
-
-        [FromForm(Name = "default-max-results")]
-        public int? DefaultMaxResults { get; set; }
-
-        [FromForm(Name = "archive-by-default")]
-        public bool ArchiveByDefault { get; set; }
-    }
-    
+    // Controller responsible for managing user settings, changing self account passwords, importing and exporting bookmarks
     [Authorize(Policy = "MemberOnly")]
     public class UserController : Controller
     {
@@ -82,12 +72,12 @@ namespace Bookstore.Controllers
         }
         
         [HttpPost]
-        public IActionResult Settings(SettingsDto settings)
+        public IActionResult Settings(UpdateSettingsDto updateSettings)
         {
             var routeValues = new RouteValueDictionary();
-            int paginationLimit = Math.Min(1000, Math.Max(1, settings.DefaultMaxResults ?? 100));
-            string defaultQuery = settings.DefaultQuery ?? "";
-            _bookstore.UpdateUserSettings(defaultQuery, settings.ArchiveByDefault, paginationLimit);
+            int paginationLimit = Math.Min(1000, Math.Max(1, updateSettings.DefaultMaxResults ?? 100));
+            string defaultQuery = updateSettings.DefaultQuery ?? "";
+            _bookstore.UpdateUserSettings(defaultQuery, updateSettings.ArchiveByDefault, paginationLimit);
             _context.SaveChanges();
             routeValues["Message"] = "Settings updated successfully";
             return RedirectToAction(nameof(Settings), routeValues);

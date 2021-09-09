@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Bookstore.Controllers
 {
+    // Controller responsible for authenticating a user/logging-in to their account
     public class AccountController : Controller
     {
         private BookmarksContext _context;
@@ -61,7 +62,7 @@ namespace Bookstore.Controllers
         
         private bool ValidateLogin(User user, string password)
         {
-            return Crypto.PasswordHashMatches(password, user.PasswordHash, user.PasswordSalt);
+            return CryptoUtility.PasswordHashMatches(password, user.PasswordHash, user.PasswordSalt);
         }
 
         public async Task<IActionResult> Logout()

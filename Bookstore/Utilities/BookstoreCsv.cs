@@ -4,6 +4,7 @@ using Bookstore.Models;
 
 namespace Bookstore.Utilities
 {
+    // Contains properties serialized and exported to bookstore CSV files
     public class BookstoreCsv
     {
         public string Title { get; set; }

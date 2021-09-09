@@ -7,6 +7,7 @@ using Bookstore.Models;
 
 namespace Bookstore.Utilities
 {
+    // Helper class to import bookmarks from Netscape Bookmarks HTML format
     public class NetscapeImporter : IBookmarkImporter
     {
         private BookstoreResolver _resolver;

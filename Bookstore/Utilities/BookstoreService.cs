@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using Bookstore.Common.Authorization;
+using Bookstore.Controllers.Dto;
 using Bookstore.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -47,7 +48,7 @@ namespace Bookstore.Utilities
 
         public bool ValidateUserPassword(string password)
         {
-            return Crypto.PasswordHashMatches(password, _user.PasswordHash, _user.PasswordSalt);
+            return CryptoUtility.PasswordHashMatches(password, _user.PasswordHash, _user.PasswordSalt);
         }
         
         public IQueryable<Bookmark> QueryUserBookmarksByIds(long[] ids)
@@ -128,12 +129,12 @@ namespace Bookstore.Utilities
         }
 
 
-        public List<UserStatistics> GetUserStatistics()
+        public List<UserStatisticsDto> GetUserStatistics()
         {
             if (!IsAdmin)
                 throw new UnauthorizedAccessException("User must be an administrator to access this resource");
 
-            UserStatistics StatsFromUser(User u)
+            UserStatisticsDto StatsFromUser(User u)
             {
                 //var bookmarks = _context.Bookmarks.Include(bm => bm.Archive).Where();
 
@@ -147,7 +148,7 @@ namespace Bookstore.Utilities
                 var abdu = UserArchives().Sum(ByteCountOfArchive);
                 var noab = UserArchives().Count();
 
-                return new UserStatistics
+                return new UserStatisticsDto
                 {
                     User = u,
                     NumberOfBookmarks = nob,
@@ -159,12 +160,12 @@ namespace Bookstore.Utilities
             return _context.Users.ToList().Select(StatsFromUser).ToList();
         }
 
-        public AdminStatistics GetAdminStatistics()
+        public AdminStatisticsDto GetAdminStatistics()
         {
             if (!IsAdmin)
                 throw new UnauthorizedAccessException("User must be an administrator to access this resource");
 
-            return new AdminStatistics
+            return new AdminStatisticsDto
             {
                 NumberOfUsers = _context.Users.Count(),
                 ArchivedDiskUsageBytes = _context.Archives.Sum(ByteCountOfArchive),
@@ -223,7 +224,7 @@ namespace Bookstore.Utilities
         
         private void UpdateUserCredentials(User user, string username, string password)
         {
-            var (passwordHash, passwordSalt) = Crypto.GeneratePasswordHash(password);
+            var (passwordHash, passwordSalt) = CryptoUtility.GeneratePasswordHash(password);
             user.Username = username;
             user.PasswordHash = passwordHash;
             user.PasswordSalt = passwordSalt;
@@ -274,7 +275,7 @@ namespace Bookstore.Utilities
         
         public void CreateNewUser(string username, string password, bool admin)
         {
-            var (passwordHash, passwordSalt) = Crypto.GeneratePasswordHash(password);
+            var (passwordHash, passwordSalt) = CryptoUtility.GeneratePasswordHash(password);
             _context.Users.Add(new User
             {
                 Admin = admin,

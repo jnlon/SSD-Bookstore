@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Bookstore.Common;
+using Bookstore.Controllers.Dto;
 using Bookstore.Models;
 using Bookstore.Models.View;
 using Bookstore.Utilities;
@@ -13,6 +14,7 @@ using Microsoft.AspNetCore.Routing;
 
 namespace Bookstore.Controllers
 {
+    // Contains methods and views for updating, deleting, archiving, and retrieving favicon from bookmarks
     [Authorize(Policy = "MemberOnly")]
     public class BookmarksController : Controller
     {
@@ -117,15 +119,6 @@ namespace Bookstore.Controllers
             return View();
         }
 
-        public class BookmarkEditDto
-        {
-            public Uri Url { get; set; }
-            public string Title { get; set; }
-            public string? Tags { get; set; }
-            public long? Folder { get; set; }
-            public string? CustomFolder { get; set; } // Only if user chooses to create a new folder
-        }
-        
         private void EditBookmark(long id, BookmarkEditDto upload, HashSet<Tag> tags, Folder? folder, bool singleEdit)
         {
             Bookmark? bookmark = _bookstore.QueryAllUserBookmarks().FirstOrDefault(bm => bm.Id == id);

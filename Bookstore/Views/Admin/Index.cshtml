@@ -1,8 +1,9 @@
 @using Bookstore.Utilities
+@using Bookstore.Controllers.Dto
 @{
     ViewData["Title"] = "Admin Home";
-    AdminStatistics adminStats = (ViewData["AdminStatistics"] as AdminStatistics)!;
-    List<UserStatistics> userStats = (ViewData["UserStatistics"] as List<UserStatistics>)!;
+    AdminStatisticsDto adminStats = (ViewData["AdminStatistics"] as AdminStatisticsDto)!;
+    List<UserStatisticsDto> userStats = (ViewData["UserStatistics"] as List<UserStatisticsDto>)!;
     User currentUser = (ViewData["CurrentUser"] as User)!;
 }
 

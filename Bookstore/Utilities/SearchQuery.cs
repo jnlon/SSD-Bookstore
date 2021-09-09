@@ -7,6 +7,7 @@ namespace Bookstore.Utilities
 {
     public enum SearchQueryField { Tag, Folder, Title, Url, Archived, Modified, Domain }
 
+    // Class representing a parsed search query function, eg title(), url(), etc.
     public class SearchQueryFunction
     {
         public readonly string Argument;
@@ -28,6 +29,7 @@ namespace Bookstore.Utilities
         }
     }
     
+    // Class that parses and represents a search query over bookmarks
     public class SearchQuery
     {
         private enum SortDirection { Asc, Desc }

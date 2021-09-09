@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Bookstore.Utilities
 {
+    // Contains data representing result of applying/executing a SearchQuery object
     public class SearchQueryResult
     {
         public int TotalFolders { get; private set; }

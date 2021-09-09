@@ -4,6 +4,7 @@ using System.Linq;
 
 namespace Bookstore.Models
 {
+    // Represents a bookmark stored by a standard user account
     public class Bookmark
     {
         public long Id { get; set; }

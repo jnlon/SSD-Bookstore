@@ -10,6 +10,7 @@ using CsvHelper;
 
 namespace Bookstore.Utilities
 {
+    // Helper class to export bookmarks to CSV format
     public class CsvExporter : IBookmarkExporter
     {
         private BookstoreService _service;

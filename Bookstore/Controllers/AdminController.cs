@@ -1,4 +1,5 @@
 using System;
+using Bookstore.Controllers.Dto;
 using Bookstore.Models;
 using Bookstore.Utilities;
 using Microsoft.AspNetCore.Authorization;
@@ -6,36 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Bookstore.Controllers
 {
-    public class UpdateUserDto
-    {
-       [FromForm(Name = "id")]
-       public long Id { get; set; }
-       
-       [FromForm(Name = "username")]
-       public string UserName { get; set; }
-       
-       [FromForm(Name = "password")]
-       public string Password { get; set; }
-       
-       [FromForm(Name = "confirm-password")]
-       public string ConfirmPassword { get; set; }
-    }
-    
-    public class CreateUserDto
-    {
-       [FromForm(Name = "username")]
-       public string UserName { get; set; }
-       
-       [FromForm(Name = "password")]
-       public string Password { get; set; }
-       
-       [FromForm(Name = "confirm-password")]
-       public string ConfirmPassword { get; set; }
-       
-       [FromForm(Name = "is-admin")]
-       public bool IsAdmin { get; set; }
-    }
-    
+    // Controller responsible for logic and views when logged in as an admin account
     [Authorize(Policy = "AdminOnly")]
     public class AdminController : Controller
     {
@@ -47,7 +19,6 @@ namespace Bookstore.Controllers
             _service = service;
         }
         
-        // GET
         [HttpGet]
         public IActionResult Create()
         {

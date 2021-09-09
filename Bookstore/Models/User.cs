@@ -2,6 +2,7 @@ using System.Collections.Generic;
 
 namespace Bookstore.Models
 {
+    // Model representing a user account
     public class User
     {
         public long Id { get; set; }

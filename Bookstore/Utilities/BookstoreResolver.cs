@@ -4,7 +4,8 @@ using Bookstore.Models;
 
 namespace Bookstore.Utilities
 {
-    // Resolver methods will create new bookmark/tag if it doesnt exist
+    // Contains methods to "resolve" folder/tags objects from the database, and will create them
+    // transparently and return those objects if resolution fails
     public class BookstoreResolver
     {
         private BookstoreService _bookstore;

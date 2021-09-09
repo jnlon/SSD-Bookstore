@@ -2,6 +2,7 @@ using System.Collections.Generic;
 
 namespace Bookstore.Models
 {
+    // Model representing a bookmark tag
     public class Tag
     {
         public long Id { get; set; }

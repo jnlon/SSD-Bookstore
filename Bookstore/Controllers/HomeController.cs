@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Bookstore.Controllers
 {
+    // Default index controller will simply redirect you to the appropriate controller/page
+    // based on current auth status
     public class HomeController : Controller
     {
         public RedirectToActionResult Index()

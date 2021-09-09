@@ -11,8 +11,8 @@ using HtmlAgilityPack;
 
 namespace Bookstore.Utilities
 {
-    // Class to "preload" a bookmark before the user creates it.
-    // This fetches the bookmark title, favicon, and resolves any HTTP redirects
+    // Class to "preload" a bookmark, extracting key data such as title, favicon, and resolving the final URL after HTTP redirects.
+    // This class is used when creating and refreshing a bookmark
     public class BookmarkLoader
     {
         private class Download

@@ -11,6 +11,7 @@ using HtmlAgilityPack;
 
 namespace Bookstore.Utilities
 {
+    // Utility class to download and archive bookmarks
     public class BookmarkArchiver
     {
         private class DownloadException : Exception

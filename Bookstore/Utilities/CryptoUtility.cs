@@ -4,7 +4,8 @@ using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 
 namespace Bookstore.Utilities
 {
-    public class Crypto
+    // Helper class containing methods for user password hashing and login
+    public static class CryptoUtility
     {
         // Derived from: https://docs.microsoft.com/en-us/aspnet/core/security/data-protection/consumer-apis/password-hashing?view=aspnetcore-5.0
         private static byte[] GenerateSalt()

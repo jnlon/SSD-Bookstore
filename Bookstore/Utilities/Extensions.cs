@@ -6,6 +6,7 @@ using Bookstore.Common.Authorization;
 
 namespace Bookstore.Utilities
 {
+    // Misc. extension methods to standard C# classes
     public static class Extensions
     {
         public static byte[]? ReadAsByteArrayLimited(this HttpContent responseContent, uint downloadLimit)

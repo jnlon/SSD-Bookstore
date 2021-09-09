@@ -6,6 +6,7 @@ using Bookstore.Models;
 
 namespace Bookstore.Utilities
 {
+    // Helper class to export bookmarks to Netscape Bookmarks HTML format
     public class NetscapeExporter : IBookmarkExporter
     {
         private BookstoreService _service;
@@ -30,8 +31,6 @@ namespace Bookstore.Utilities
                 Added = bookmark.Created,
                 Title = bookmark.Title,
                 LastModified = bookmark.Modified,
-                // IconData = bookmark.Favicon,
-                // IconContentType = bookmark.FaviconMime,
                 Attributes = attributes
             };
         }

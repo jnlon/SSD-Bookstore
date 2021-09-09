@@ -3,9 +3,9 @@ using System.Linq;
 
 namespace Bookstore.Models
 {
+    // Class representing a bookmark folder. This data structure is recursive, ie. self-referencing via the 'Parent' property
     public class Folder
     {
-        //public static string Seperator = ">";
         public static string Seperator = "/";
         
         public long Id { get; set; }

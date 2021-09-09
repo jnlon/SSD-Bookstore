@@ -8,6 +8,7 @@ using CsvHelper;
 
 namespace Bookstore.Utilities
 {
+    // Helper class to import bookmarks from CSV format
     public class CsvImporter : IBookmarkImporter
     {
         private BookstoreService _service;

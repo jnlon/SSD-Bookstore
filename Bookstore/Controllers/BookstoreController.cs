@@ -13,6 +13,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Bookstore.Controllers
 {
+    // Controller for displaying the primary standard user "home" page
+    // Allows user to access pages for creating/updating bookmarks, query, and otherwise manage their bookmark collection
     [Authorize(Policy = "MemberOnly")]
     public class BookstoreController : Controller
     {

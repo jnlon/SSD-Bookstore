@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Bookstore.Models
 {
+    // Represents an archived bookmark content
     public class Archive
     {
         [ForeignKey("Bookmark")]
