@@ -22,33 +22,11 @@ namespace Bookstore.Utilities
             _existingBookmarks = _bookstore.QueryAllUserBookmarks().Select(bm => bm.Url).ToList();
         }
 
-        public string DetectFaviconMimeType(BookmarkLink link)
-        {
-            // NOTE HACK: Firefox netscape export will incorrectly classify SVG favicons as 'image/png' in data URL of netscape export
-            // Correct this with a heuristic; look at the canonical URL for hints
-            if ((link.IconUrl?.EndsWith(".svg") ?? false) ||
-                (link.IconUrl?.StartsWith("data:image/svg+xml") ?? false))
-            {
-                return "image/svg+xml";
-            }
-
-            return link.IconContentType;
-        }
-
         private void ImportBookmark(string[] folderStackArray, BookmarkLink link)
         {
             // Do not import bookmarks matching existing URLs
             if (_existingBookmarks.Contains(new Uri(link.Url)))
                 return;
-            
-            byte[]? favicon = null;
-            string? faviconMime = null;
-            
-            if (link.IconData != null && link.IconData.Length > 0)
-            {
-                favicon = link.IconData;
-                faviconMime = DetectFaviconMimeType(link);
-            }
             
             HashSet<Tag> tags = new();
 
@@ -61,8 +39,8 @@ namespace Bookstore.Utilities
                 archive: null,
                 created: link.Added ?? DateTime.Now,
                 modified: link.Added ?? DateTime.Now,
-                faviconData: favicon,
-                faviconMime: faviconMime,
+                faviconData: null,
+                faviconMime: null,
                 faviconUrl: null,
                 folder: _resolver.ResolveFolder(folderStackArray),
                 tags: tags,

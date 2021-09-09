@@ -8,7 +8,6 @@ using Bookstore.Models;
 using Bookstore.Models.View;
 using Bookstore.Utilities;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 

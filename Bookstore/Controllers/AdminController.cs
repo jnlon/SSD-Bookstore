@@ -1,6 +1,4 @@
 using System;
-using System.Linq;
-using Bookstore.Common.Authorization;
 using Bookstore.Models;
 using Bookstore.Utilities;
 using Microsoft.AspNetCore.Authorization;

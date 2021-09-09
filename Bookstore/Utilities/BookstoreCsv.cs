@@ -1,6 +1,4 @@
 using System;
-using System.Buffers.Text;
-using System.Collections.Generic;
 using System.Linq;
 using Bookstore.Models;
 
@@ -12,9 +10,6 @@ namespace Bookstore.Utilities
         public Uri Url { get; set; }
         public string? Tags { get; set; }
         public string? FolderPath { get; set; }
-        public string? FaviconBase64 { get; set; }
-        public string? FaviconMime { get; set; }
-        public Uri? FaviconUrl { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime ModifiedDate { get; set; }
 
@@ -23,14 +18,11 @@ namespace Bookstore.Utilities
             return new BookstoreCsv
             {
                 Tags = string.Join(",", bm.Tags.Select(t => t.Name).ToList()),
-                Title = bm.Title,
+                Title = bm.Title.Trim(),
                 Url = bm.Url,
                 CreatedDate = bm.Created,
                 FolderPath = bm?.Folder?.ToMenuString() ?? "",
                 ModifiedDate = bm.Modified,
-                FaviconBase64 = Convert.ToBase64String(bm.Favicon?.Data ?? new byte[]{}),
-                FaviconMime = bm?.Favicon?.Mime,
-                FaviconUrl = bm?.Favicon?.Url
             };
         }
     }

@@ -3,13 +3,13 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Bookstore.Common;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Bookstore.Models;
 using Bookstore.Models.View;
-using Microsoft.AspNetCore.Authorization;
 using Bookstore.Utilities;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Logging;
 
 namespace Bookstore.Controllers
 {

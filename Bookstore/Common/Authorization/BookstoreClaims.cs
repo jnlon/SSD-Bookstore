@@ -1,5 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-
 namespace Bookstore.Common.Authorization
 {
     public static class BookstoreClaims

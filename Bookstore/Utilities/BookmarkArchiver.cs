@@ -6,10 +6,8 @@ using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Xml.Schema;
 using Bookstore.Models;
 using HtmlAgilityPack;
-using Microsoft.EntityFrameworkCore;
 
 namespace Bookstore.Utilities
 {

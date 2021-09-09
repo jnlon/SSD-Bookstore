@@ -1,28 +1,25 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using Bookstore.Models;
-using Bookstore.Views.Admin;
 using HtmlAgilityPack;
 
 namespace Bookstore.Utilities
 {
-    // Class to "preload" a bookmark before the user creates it. This fetches the bookmark title and favicon values
+    // Class to "preload" a bookmark before the user creates it.
+    // This fetches the bookmark title, favicon, and resolves any HTTP redirects
     public class BookmarkLoader
     {
         private class Download
         {
             public readonly HttpResponseMessage? Response;
 
-            private Download(HttpResponseMessage response)
+            private Download(HttpResponseMessage? response)
             {
                 Response = response;
             }
@@ -66,7 +63,7 @@ namespace Bookstore.Utilities
                 var encoding = DetectPageEncoding(content);
                 _doc.Load(new MemoryStream(content), encoding);
                 IconUri = FindIconUri(source);
-                Title = _doc.DocumentNode.SelectSingleNode("//head/title")?.InnerText;
+                Title = _doc.DocumentNode.SelectSingleNode("//head/title")?.InnerText.Trim();
             }
 
             private static Encoding DetectPageEncoding(byte[] content)
@@ -114,9 +111,6 @@ namespace Bookstore.Utilities
         private static readonly uint MaxDownloadSize = 3 * 1000 * 1000;
 
         public Favicon? Favicon { get; set; }
-
-        // public string? FaviconMimeType { get; private set; }
-       // public byte[]? Favicon { get; private set; }
         public string Title { get; private set; } = string.Empty;
         public Uri FinalUrl { get; private set; } // After redirects
         public Uri OriginalUrl { get; private set; } // Before Redirects
@@ -158,13 +152,15 @@ namespace Bookstore.Utilities
             {
                 favicon = new Favicon
                 {
-                    Data = faviconDownload.ReadAsBytes(MaxDownloadSize),
+                    Data = faviconDownload.ReadAsBytes(MaxDownloadSize)!,
                     Mime = faviconDownload.ContentType!,
                     Url = faviconDownload.RequestUrl!
                 };
             }
 
-            string title = html?.Title == null ? bookmarkUrl.ToString() : WebUtility.HtmlDecode(html.Title);
+            string title = html?.Title == null 
+                ? bookmarkUrl.ToString()
+                : WebUtility.HtmlDecode(html.Title).Trim();
             
             return new BookmarkLoader
             {
