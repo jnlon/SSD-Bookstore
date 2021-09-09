@@ -1,3 +1,4 @@
+using System.Net;
 using Bookstore.Utilities;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,6 +22,18 @@ namespace Bookstore.Controllers
             
             // Unauthenticated!
             return new RedirectToActionResult(actionName: "Login", controllerName: "Account", null);
+        }
+        
+        public IActionResult ErrorRedirect()
+        {
+            return RedirectToAction(nameof(Error));
+        }
+
+        // Generic error page for production deployments
+        public IActionResult Error()
+        {
+            Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+            return View();
         }
     }
 }
