@@ -29,4 +29,10 @@
       <_ContentIncludedByDefault Remove="Views\Example\Index.cshtml" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="bookstore.prod.db">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>
