@@ -48,9 +48,9 @@ namespace Bookstore.Controllers
             {
                 routeValues["Error"] = @"""Current password"" does not match password on account";
             }
-            else if (update.Password != update.ConfirmPassword)
+            else if (!_bookstore.ValidateNewPassword(update.Password, update.ConfirmPassword, out string? error))
             {
-                routeValues["Error"] = @"""New Password"" and ""Confirm New Password"" do not match";
+                routeValues["Error"] = error;
             }
             else
             {

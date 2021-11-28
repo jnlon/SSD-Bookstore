@@ -46,9 +46,31 @@ namespace Bookstore.Utilities
                 .Where(bm => bm.UserId == _user.Id);
         }
 
-        public bool ValidateUserPassword(string password)
+        public bool ValidateUserPassword(string? password)
         {
-            return CryptoUtility.PasswordHashMatches(password, _user.PasswordHash, _user.PasswordSalt);
+            return password != null &&
+                   CryptoUtility.PasswordHashMatches(password, _user.PasswordHash, _user.PasswordSalt);
+        }
+        
+        public bool ValidateNewPassword(string? password, string? confirmPassword, out string? error)
+        {
+            error = null;
+
+            if (password == null || confirmPassword == null)
+            {
+                error = "Password and confirm password cannot be missing";
+            }
+            else if (password != confirmPassword)
+            {
+                error = "Password confirmation does not match";
+            }
+            else if (password.Length < 12)
+            {
+                error = @"Password must be at least 12 characters in length";
+            }
+
+            // Return true if password is valid
+            return error == null;
         }
         
         public IQueryable<Bookmark> QueryUserBookmarksByIds(long[] ids)

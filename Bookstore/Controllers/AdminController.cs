@@ -28,15 +28,15 @@ namespace Bookstore.Controllers
         [HttpPost]
         public IActionResult Create(CreateUserDto create)
         {
-            if (create.Password != create.ConfirmPassword)
-            {
-                ViewData["Message"] = "Password confirmation does not match";
-                return View();
-            }
-
             if (_service.GetUserByUserName(create.UserName) != null)
             {
-                ViewData["Message"] = "A user with this name already exists";
+                ViewData["Error"] = "A user with this name already exists";
+                return View();
+            }
+            
+            if (!_service.ValidateNewPassword(create.Password, create.ConfirmPassword, out string? error))
+            {
+                ViewData["Error"] = error;
                 return View();
             }
             
@@ -55,13 +55,13 @@ namespace Bookstore.Controllers
         [HttpPost]
         public IActionResult Edit(UpdateUserDto update)
         {
-            if (update.Password != update.ConfirmPassword)
+            if (!_service.ValidateNewPassword(update.Password, update.ConfirmPassword, out string? error))
             {
                 ViewData["User"] = _service.GetUserById(update.Id);
-                ViewData["Message"] = "Password confirmation does not match";
+                ViewData["Error"] = error;
                 return View();
             }
-                
+            
             _service.UpdateUserCredentials(update.Id, update.UserName, update.Password);
             _context.SaveChanges();
             

@@ -7,10 +7,6 @@
 
 <div class="m-3">
     <h1>Update User Account</h1>
-    @if (message != null)
-    {
-        <div class="alert alert-danger" role="alert">@message</div>
-    }
     <form class="d-block w-50" method="POST">
         <input name="id" type="hidden" value="@user.Id" class="form-control">
         <div class="form-group">

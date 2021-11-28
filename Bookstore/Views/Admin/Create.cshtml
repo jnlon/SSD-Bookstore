@@ -1,14 +1,10 @@
 @{
     ViewData["Title"] = "Create User";
-    string? message = ViewData.ContainsKey("Message") ? ViewData["Message"] as string : null;
+    string? error = ViewData.ContainsKey("Error") ? ViewData["Error"] as string : null;
 }
 
 <div class="m-3">
     <h1>Add New User</h1>
-    @if (message != null)
-    {
-        <div class="alert alert-danger" role="alert">@message</div>
-    }
     <form class="d-block w-50" method="POST">
         <div class="form-group">
             <label for="username">Email or Username</label>
