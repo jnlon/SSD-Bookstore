@@ -103,6 +103,12 @@ namespace Bookstore
             //     RequestPath = "/archive-static",
             //     ServeUnknownFileTypes = true
             // });
+
+            app.Use(async (context, next) =>
+            {
+                context.Response.Headers.Add("X-Frame-Options", "DENY");
+                await next();
+            });
             
             app.UseEndpoints(endpoints =>
             {
