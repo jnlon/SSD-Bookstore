@@ -131,6 +131,7 @@ namespace Bookstore
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                bookmarksContext.Database.Migrate();
             }
             else
             {
@@ -139,8 +140,6 @@ namespace Bookstore
                 app.UseHsts();
             }
             
-            bookmarksContext.Database.Migrate();
-
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             
