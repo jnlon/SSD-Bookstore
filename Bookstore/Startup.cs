@@ -44,7 +44,7 @@ namespace Bookstore
                 options.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0");
             });
             //.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler() { MaxConnectionsPerServer = 1 } );
-            
+
             services.AddControllersWithViews();
             services
                 .AddEntityFrameworkSqlite()
@@ -97,12 +97,13 @@ namespace Bookstore
             {
                 log.LogInformation("No users available at startup; Creating default accounts");
 
+                string? environmentDefaultPassword = config["Bookstore:DefaultPassword"] ?? Environment.GetEnvironmentVariable("BookstoreDefaultPassword");
                 string defaultPassword = CreateRandomPassword(12);
                 
-                if (config["Bookstore:DefaultPassword"] != null)
+                if (environmentDefaultPassword != null)
                 {
                     log.LogInformation("Using configuration value 'Bookstore:DefaultPassword' for default account password");
-                    defaultPassword = config["Bookstore:DefaultPassword"];
+                    defaultPassword = environmentDefaultPassword;
                 }
                 else
                 {
