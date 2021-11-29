@@ -1,5 +1,8 @@
 using System;
+using System.Linq;
 using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using Bookstore.Common;
 using Bookstore.Common.Authorization;
 using Bookstore.Models;
@@ -13,9 +16,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Bookstore
 {
+    
     public class Startup
     {
         private readonly IConfiguration _configuration;
@@ -31,7 +36,6 @@ namespace Bookstore
         {
             
             services.AddHttpContextAccessor();
-
 
             services.AddHttpClient(Constants.AppName, (options) =>
             {
@@ -74,8 +78,53 @@ namespace Bookstore
             });
         }
 
+        private string CreateRandomPassword(int passwordLength)
+        {
+            char[] numbers = Enumerable.Range(48, 10).Select(i => (char)i).ToArray(); // '0' .. '9'
+            char[] lowers = Enumerable.Range(97, 26).Select(i => (char)i).ToArray();  // 'a' .. 'z'
+            char[] uppers = Enumerable.Range(65, 26).Select(i => (char)i).ToArray();  // 'A' .. 'Z'
+            char[] symbols = numbers.Concat(lowers).Concat(uppers).ToArray();
+
+            var random = new Random();
+            return new string(Enumerable.Range(0, passwordLength).Select(i => symbols[random.Next() % symbols.Length]).ToArray());
+        }
+
+        private void ConfigureDatabase(IWebHostEnvironment env, IConfiguration config, BookmarksContext bookmarksContext, BookstoreService bookstore, ILogger<Startup> log)
+        {
+            // No users in the database yet, so seed it with default values
+            if (bookmarksContext.Users.Count() == 0)
+            {
+                log.LogInformation("No users available at startup; Creating default accounts");
+
+                string defaultPassword = CreateRandomPassword(12);
+                
+                if (config["Bookstore:DefaultPassword"] != null)
+                {
+                    log.LogInformation("Using configuration value 'Bookstore:DefaultPassword' for default account password");
+                    defaultPassword = config["Bookstore:DefaultPassword"];
+                }
+                else
+                {
+                    log.LogInformation($"Missing 'Bookstore:DefaultPassword'; Using randomly generated password: {defaultPassword}");
+                }
+                
+                if (env.IsProduction())
+                {
+                    bookstore.CreateNewUser("admin", defaultPassword, true);
+                }
+
+                if (env.IsDevelopment())
+                {
+                    bookstore.CreateNewUser("admin", defaultPassword, true);
+                    bookstore.CreateNewUser("user", defaultPassword, false);
+                }
+
+                bookmarksContext.SaveChanges();
+            }
+        }
+
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IConfiguration config, BookmarksContext bookmarksContext, BookstoreService bookstore, ILogger<Startup> log)
         {
             if (env.IsDevelopment())
             {
@@ -87,6 +136,8 @@ namespace Bookstore
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+            
+            bookmarksContext.Database.Migrate();
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
@@ -114,6 +165,8 @@ namespace Bookstore
             {
                 endpoints.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
             });
+
+            ConfigureDatabase(env, config, bookmarksContext, bookstore, log);
         }
     }
 }

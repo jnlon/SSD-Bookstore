@@ -1,8 +1,11 @@
+using System;
+using System.Linq;
 using Bookstore.Utilities;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 using Microsoft.Extensions.Hosting;
 
 namespace Bookstore.Models
@@ -20,24 +23,6 @@ namespace Bookstore.Models
         {
         }
 
-        private void InsertProductionData(ModelBuilder builder, IConfiguration config)
-        {
-            var (passwordHash, passwordSalt) = CryptoUtility.GeneratePasswordHash(config["Bookstore:DefaultPassword"]);
-            var adminUser = new User() {Id = 1, Admin = true, Username = "admin", PasswordHash = passwordHash, PasswordSalt = passwordSalt};
-            builder.Entity<User>().HasData(adminUser);
-        }
-
-        private void InsertDevelopmentData(ModelBuilder builder, IConfiguration config)
-        {
-            var (passwordHash, passwordSalt) = CryptoUtility.GeneratePasswordHash(config["Bookstore:DefaultPassword"]);
-            var adminUser = new User {Id = 1, Admin = true, Username = "admin", PasswordHash = passwordHash, PasswordSalt = passwordSalt};
-            builder.Entity<User>().HasData(adminUser);
-            
-            (passwordHash, passwordSalt) = CryptoUtility.GeneratePasswordHash(config["Bookstore:DefaultPassword"]);
-            var standardUser = new User {Id = 2, Admin = false, Username = "toast", PasswordHash = passwordHash, PasswordSalt = passwordSalt};
-            builder.Entity<User>().HasData(standardUser);
-        }
-
         protected override void OnModelCreating(ModelBuilder builder)
         {
             builder.Entity<User>()
@@ -48,18 +33,6 @@ namespace Bookstore.Models
             builder.Entity<Bookmark>().Property(t => t.TagString).UsePropertyAccessMode(PropertyAccessMode.Property);
             builder.Entity<Bookmark>().Property(t => t.UrlString).UsePropertyAccessMode(PropertyAccessMode.Property);
             builder.Entity<Bookmark>().Property(t => t.DomainString).UsePropertyAccessMode(PropertyAccessMode.Property);
-
-            IWebHostEnvironment env = this.GetService<IWebHostEnvironment>();
-            IConfiguration config = this.GetService<IConfiguration>();
-            if (env.IsDevelopment())
-            {
-                InsertDevelopmentData(builder, config);
-            }
-
-            if (env.IsProduction())
-            {
-                InsertProductionData(builder, config);
-            }
         }
     }
 }
